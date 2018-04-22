@@ -190,13 +190,23 @@ export default {
         //   select: this.select,
         //   checkbox: this.checkbox
         // })
+        const path = `http://localhost:5000/api/getflights`;
+        var d = {"depart":this.depart,"arrive":this.arrive,"date":this.date};
+        axios.post(path,d)
+          .then(response => {
+            var res = response.data;
+            console.log(res);
+          })
+          .catch(error => {
+            console.log('getting flights -->', error);
+          });
       }
     },
     clear () {
       this.$refs.form.reset()
     },
     buyItem (item) {
-      const index = this.items.indexOf(item)
+      const index = this.items.indexOf(item);
       confirm('Are you sure you want to buy this item?') && this.items.splice(index, 1)
     },
     initialize () {
