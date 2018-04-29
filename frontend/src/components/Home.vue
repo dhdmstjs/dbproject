@@ -18,10 +18,10 @@
               <v-card-text>
                 <v-form v-model="valid" ref="form" lazy-validation>
                     <v-text-field
-                    label="Username" v-model="username" :rules="usernameRules" required></v-text-field>
+                    label="Email" v-model="username" :rules="usernameRules" required></v-text-field>
                     <v-text-field
                     label="Password" v-model="password" :rules="passwordRules" required></v-text-field>
-                  <v-btn @click="login" :disabled="!valid">Login</v-btn>
+                  <v-btn @click="loginfunction" :disabled="!valid">Login</v-btn>
                 </v-form>
               </v-card-text>
               <v-card-actions>
@@ -38,13 +38,13 @@
                   <v-card-text>
                     <v-form v-model="valid" ref="form" lazy-validation>
                         <v-text-field
-                        label="Username" v-model="username" :rules="usernameRules" required></v-text-field>
+                        label="Email" v-model="username" :rules="usernameRules" required></v-text-field>
                         <v-text-field
                         label="Password" v-model="password" :rules="passwordRules" required></v-text-field>
                         <v-checkbox label="Airline Staff" v-model="checkbox1"></v-checkbox>
                         <v-checkbox label="Booking Agent" v-model="checkbox2"></v-checkbox>
 
-                      <v-btn @click="register" :disabled="!valid">Register</v-btn>
+                      <v-btn @click="registerfunction" :disabled="!valid">Register</v-btn>
                     </v-form>
                   </v-card-text>
                   <v-card-actions>
@@ -160,10 +160,10 @@ export default {
       { text: 'Actions', value: 'name', sortable: false }
     ],
      items: [],
-     menu: [
-       {item:'Login/Register'},
-       {item:'Other stuff'}
-     ],
+//     menu: [
+//       {item:'Login/Register'},
+//       {item:'Other stuff'}
+//     ],
      login: false,
      register: false,
      checkbox1: false, //airline staff
@@ -248,6 +248,34 @@ export default {
         }
       ]
     },
+    loginfunction() {
+      console.log('testing login', this.username, "+ ", this.password)
+      const path = `http://localhost:5000/login/auth`;
+      var d = {"email":this.username, "password":this.password};
+      axios.post(path,d)
+        .then(response => {
+          var res = response.data;
+          console.log(res);
+        })
+        .catch(error => {
+          console.log('login -->', error);
+        });
+
+    },
+    registerfunction() {
+      const path = `http://localhost:5000/register/auth`;
+      console.log("testing register", this.username, "+ ", this.password, this.checkbox1, this.checkbox2)
+      var d = {"email":this.username, "password":this.password, "name":"noname"};
+      //todo: add fields to registration
+      axios.post(path,d)
+        .then(response => {
+          var res = response.data;
+          console.log(res);
+        })
+        .catch(error => {
+          console.log('login -->', error);
+        });
+    }
   }
 }
 </script>
