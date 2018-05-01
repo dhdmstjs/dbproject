@@ -1,5 +1,8 @@
 from flask import Flask, render_template, request, session, url_for, redirect, jsonify
 from flask_cors import CORS
+import os
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from static.python.helpers import hash_password,check_password
 import pymysql.cursors
 import json
@@ -12,7 +15,7 @@ class CustomFlask(Flask):
   ))
 app = Flask(__name__)
 
-cors = CORS(app, resources={r"/*": {"origins": "*"}})
+cors = CORS(app)
 
 #Configure MySQL
 conn = pymysql.connect(host='localhost',
