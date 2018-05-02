@@ -59,7 +59,7 @@
                   label="Status" v-model="flight_status" required></v-text-field>
                   <v-text-field
                   label="Airplane Id" v-model="airplane_id" required></v-text-field>
-                <v-btn @click="submit" :disabled="!valid">submit</v-btn>
+                <v-btn @click="submit1" :disabled="!valid">submit</v-btn>
                 <v-btn @click="clear">clear</v-btn>
               </v-form>
             </v-card>
@@ -80,7 +80,7 @@
                 label="Flight Number" v-model="flight_num" required></v-text-field>
                 <v-text-field
                 label="Status" v-model="flight_status" required></v-text-field>
-              <v-btn @click="submit" :disabled="!valid">submit</v-btn>
+              <v-btn @click="submit2" :disabled="!valid">submit</v-btn>
               <v-btn @click="clear">clear</v-btn>
             </v-form>
           </v-card>
@@ -100,7 +100,7 @@
                 label="Airplane ID" v-model="airplane_id" required></v-text-field>
                 <v-text-field
                 label="Seats" v-model="seats" required></v-text-field>
-              <v-btn @click="submit" :disabled="!valid">submit</v-btn>
+              <v-btn @click="submit3" :disabled="!valid">submit</v-btn>
               <v-btn @click="clear">clear</v-btn>
             </v-form>
           </v-card>
@@ -118,7 +118,7 @@
                 label="Airport Name" v-model="airport_name" required></v-text-field>
                 <v-text-field
                 label="Airport City" v-model="airport_city" required></v-text-field>
-              <v-btn @click="submit" :disabled="!valid">submit</v-btn>
+              <v-btn @click="submit4" :disabled="!valid">submit</v-btn>
               <v-btn @click="clear">clear</v-btn>
             </v-form>
           </v-card>
@@ -167,8 +167,8 @@ export default {
   },
 
   methods: {
-    submit(item) {
-      console.log("item",item);
+    submit1(item) {
+      console.log("item", item);
       if (this.$refs.form1.validate()) {
         console.log(
           this.airline_name,
@@ -183,7 +183,21 @@ export default {
           this.flight_status,
           this.airplane_id
         );
+        const path = `http://localhost:5000/api/createflight`;
+        var d = {"airline_name":this.airline_name, "flight_num":this.flight_num, "departure_airport":this.departure_airport, "date1":this.date1, "time1":this.time1, "date2":this.date2, "time2":this.time2, "arrival_airport":this.arrival_airport, "price":this.price, "flight_status":this.flight_status, "airplane_id":this.airplane_id};
+        console.log(d);
+        axios.post(path,d)
+          .then(response => {
+            var res = response.data;
+            console.log(res['success']);
+            console.log(res['message']);
+          })
+          .catch(error => {
+            console.log('getting flights -->', error);
+          });
       }
+    },
+    submit2(item) {
       if (this.$refs.form2.validate()) {
         console.log(
           this.airline_name,
@@ -191,6 +205,8 @@ export default {
           this.flight_status,
         );
       }
+    },
+    submit3(item) {
       if (this.$refs.form3.validate()) {
         console.log(
           this.airline_name,
@@ -198,6 +214,8 @@ export default {
           this.seats,
         );
       }
+    },
+    submit4(item) {
       if (this.$refs.form4.validate()) {
         console.log(
           this.airport_name,

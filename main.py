@@ -39,12 +39,37 @@ def get_flights():
     cursor = conn.cursor()
     if (rec['date']):
         query = "SELECT * FROM flight WHERE departure_airport = %s and arrival_airport = %s and departure_time between %s and %s"
-        cursor.execute(query, (rec['depart'], rec['arrive'], rec['date'], rec['date']+' 23:59:59'))
+        try:
+            cursor.execute(query, (rec['depart'], rec['arrive'], rec['date'], rec['date']+' 23:59:59'))
+        except:
+            return json.dumps({"success":"false", "message": "database query failed"})
     else:
         query = 'SELECT * FROM flight WHERE departure_airport = %s and arrival_airport = %s'
         cursor.execute(query, (rec['depart'], rec['arrive']))
     ret = cursor.fetchall()
     return json.dumps(ret,default=str)
+
+@app.route('/api/createflight', methods=['GET', 'POST'])
+def create_flight():
+    global rec
+    rec = request.json
+    for r in rec:
+        if not rec[r]:
+            return json.dumps({"success":"false", "message": "please submit all of the required fields"})
+    cursor = conn.cursor()
+    query = "insert into flight values(%s,%s, %s, %s, %s, %s, %s, %s, %s)"
+    args = (rec['airline_name'],rec['flight_num'],rec['departure_airport'],rec['date1']+' '+rec['time1'],
+             rec['arrival_airport'],rec['date2']+' '+rec['time2'],rec['price'],rec['flight_status'],rec['airplane_id'])
+    try:
+        cursor.execute(query, args)
+        conn.commit()
+    except Exception as e:
+        print(e)
+        return json.dumps({"success":"false", "message": "database query failed"})
+    
+    return json.dumps({"success":"true", "message": "Flight inserted successfully"})
+
+@app.route('/api/)
 
 @app.route('/register/auth', methods = ['GET', 'POST'])
 def registerAuth():
@@ -55,10 +80,10 @@ def registerAuth():
         cursor.execute(query, (rec['email']))
     except Exception as e:
         print(e)
-        return json.dumps({"register":"false", "message": "database query failed"})
+        return json.dumps({"success":"false", "message": "database query failed"})
     data = cursor.fetchone()
     if data:
-        return json.dumps({"register":"false", "message":"This user already exists in the database"})  
+        return json.dumps({"success":"false", "message":"This user already exists in the database"})  
     query = 'insert into customer values(%s,%s,%s,"test","test","test","test","test","test","2020-04-01","test","1996-02-09")'
     hashed_pass = hash_password(rec['password'])
     cursor = conn.cursor()
@@ -67,8 +92,8 @@ def registerAuth():
         conn.commit()
     except Exception as e:
         print(e)
-        return json.dumps({"register":"false", "message":"database operation failed"})
-    return json.dumps({"register":"true", "message":"Registration successfull"})
+        return json.dumps({"success":"false", "message":"database operation failed"})
+    return json.dumps({"success":"true", "message":"Registration successfull"})
     
 
 @app.route('/login/auth', methods=['GET', 'POST'])
@@ -94,7 +119,7 @@ def loginAuth():
         cursor.execute(query, (username))
     except Exception as e:
         print(e)
-        return json.dumps({"login":"false", "message": "database query failed"})
+        return json.dumps({"success":"false", "message": "database query failed"})
     
     data = cursor.fetchone()
     if(data and check_password(data['password'], password)):
@@ -109,7 +134,7 @@ def loginAuth():
         login = "false"
         
     cursor.close()
-    return json.dumps({"login" : login, "message" : message})
+    return json.dumps({"success" : login, "message" : message})
 
 
 @app.route('/', defaults={'path': ''})

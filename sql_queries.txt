@@ -1,0 +1,26 @@
+--The following is a list of sql queries used in the project. These are shown with the arguments that are fed into the
+--the query dynamically, which are named to be self explanatory. "rec" indicates that it was received from the front end. 
+
+
+-- Querying Flights --
+
+--Get flights given departure and arrival airports and a date. Note that the schema we are given is a date-time instead of date,
+--so we need to use "between."
+SELECT * FROM flight WHERE departure_airport = %s and arrival_airport = %s and departure_time between %s and %s
+execute(query, (rec['depart'], rec['arrive'], rec['date'], rec['date']+' 23:59:59'))
+
+--Get flights given departure and arrival airports only
+SELECT * FROM flight WHERE departure_airport = %s and arrival_airport = %s
+
+-- /Querying Flights --
+
+-- Login and Registration --
+
+-- Check if someone has already registered with a given email if they're a customer
+SELECT * FROM customer WHERE email = %s
+-- if they're registering as an airline staff
+SELECT * FROM airline_staff WHERE username = %s
+-- if they're registering as a booking agent
+SELECT * FROM booking_agent WHERE email = %s
+
+-- /Login and Registration --
