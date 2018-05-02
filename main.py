@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, url_for, redirect, jsonify
+from flask import Flask, render_template, request, session, url_for, redirect, jsonify, flash
 from flask_cors import CORS
 import os
 import sys
@@ -13,7 +13,7 @@ class CustomFlask(Flask):
     variable_start_string='!!',
     variable_end_string='!!'
   ))
-app = Flask(__name__)
+app = CustomFlask(__name__, template_folder=os.path.abspath('frontend'))
 
 cors = CORS(app)
 
@@ -55,11 +55,11 @@ def registerAuth():
         cursor.execute(query, (rec['email']))
     except Exception as e:
         print(e)
-        return json.dumps({"register":"false", "message": "database operation failed"})
+        return json.dumps({"register":"false", "message": "database query failed"})
     data = cursor.fetchone()
     if data:
         return json.dumps({"register":"false", "message":"This user already exists in the database"})  
-    query = 'insert into customer values("%s","%s",%s,"test","test","test","test","test","test","2020-04-01","test","1996-02-09")'
+    query = 'insert into customer values(%s,%s,%s,"test","test","test","test","test","test","2020-04-01","test","1996-02-09")'
     hashed_pass = hash_password(rec['password'])
     cursor = conn.cursor()
     try:
@@ -85,11 +85,11 @@ def loginAuth():
     typ = "customer"
     
     if typ == "customer":
-        query = 'SELECT email,password FROM customer WHERE email = "%s"'
+        query = 'SELECT email,password FROM customer WHERE email = %s'
     elif typ == "booking_agent":
-        query = 'SELECT * FROM airline_staff WHERE username = "%s"'
+        query = 'SELECT * FROM airline_staff WHERE username = %s'
     else:
-        query = 'SELECT * FROM booking_agent WHERE email = "%s"'
+        query = 'SELECT * FROM booking_agent WHERE email = %s'
     try:
         cursor.execute(query, (username))
     except Exception as e:
@@ -115,7 +115,8 @@ def loginAuth():
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def catch_all(path):
-    return render_template("index.html")
+    return render_template("index.html", username = "colton")
+    #here's where you left off
 
 if __name__ == "__main__":
     app.secret_key = "I gotta s3cret key that youll never know"

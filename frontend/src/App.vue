@@ -1,12 +1,224 @@
 <template>
   <div id="app">
+    <v-app>
+      <div v-if="this.login==false">
+      <!-- Login/Register -->
+      <v-layout row wrap justify-end>
+        <v-flex xs4>
+        <v-btn color="primary" dark @click.stop="loginfunc = true">Login</v-btn>
+        <v-btn color="primary" dark @click.stop="register = true">Register</v-btn>
+        <!-- Login Content -->
+          <v-dialog v-model="loginfunc" max-width="500px">
+              <v-card>
+                <v-card-title>
+                  Login
+                </v-card-title>
+                <v-card-text>
+                  <v-form v-model="valid" ref="formLogin" lazy-validation>
+                      <v-text-field
+                      label="Email" v-model="username" :rules="usernameRules" required></v-text-field>
+                      <v-text-field
+                      label="Password" v-model="password" :rules="passwordRules" required></v-text-field>
+                    <v-btn @click="loginfunction" :disabled="!valid">Login</v-btn>
+                  </v-form>
+                </v-card-text>
+                <v-card-actions>
+                  <v-btn color="primary" flat @click.stop="loginfunc=false">Close</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
+            <!-- Register Content -->
+            <v-dialog v-model="register" max-width="500px">
+                  <v-card>
+                    <v-card-title>
+                      Register
+                    </v-card-title>
+                    <v-card-text>
+                      <v-form v-model="valid" ref="formRegister" lazy-validation>
+                          <v-text-field
+                          label="Email" v-model="username" :rules="usernameRules" required></v-text-field>
+                          <v-text-field
+                          label="Password" v-model="password" :rules="passwordRules" required></v-text-field>
+                          <v-radio-group v-model="signup" :mandatory="false">
+                            <v-radio label="Booking Agent" value="booking_agent"></v-radio>
+                            <v-radio label="Airline Staff" value="airline_staff"></v-radio>
+                            <v-radio label="Customer" value="customer"></v-radio>
+                          </v-radio-group>
+                        <v-btn @click="registerfunction" :disabled="!valid">Register</v-btn>
+                      </v-form>
+                    </v-card-text>
+                    <v-card-actions>
+                      <v-btn color="primary" flat @click.stop="register=false">Close</v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+          </v-flex>
+        </v-layout>
+      </div>
+
+      <!-- user info/hover menu   -->
+      <div v-else>
+        <v-layout row wrap justify-end>
+          <v-flex xs4>
+          <!-- menu dropdown -->
+            <v-menu offset-y>
+              <v-btn color="primary" dark slot="activator">User Name</v-btn>
+              <v-list>
+                <v-list-tile v-for="item in dropdown" :key="item.title" @click="dropdownMenu(item.title)">
+                  <v-list-tile-title>{{ item.title }}</v-list-tile-title>
+                </v-list-tile>
+              </v-list>
+            </v-menu>
+          </v-flex>
+        </v-layout>
+      </div>
+
+
     <router-view/>
+    <v-card height="200px" flat>
+      <v-bottom-nav absolute :value="true" :active.sync="e1" color="transparent">
+        <v-btn flat color="teal" value="recent" @click="router('home')">
+            <span>Home</span>
+            <v-icon>home</v-icon>
+        </v-btn>
+        <v-btn flat color="teal" value="favorites" @click="router('favorites')">
+          <span>Favorites</span>
+          <v-icon>favorite</v-icon>
+        </v-btn>
+        <v-btn flat color="teal" value="nearby" @click="router('nearby')">
+          <span>Nearby</span>
+          <v-icon>place</v-icon>
+        </v-btn>
+      </v-bottom-nav>
+    </v-card>
+  </v-app>
   </div>
 </template>
 
 <script>
+import axios from 'axios'
+import 'vuetify/dist/vuetify.min.css'
+import Vue from 'vue'
+
 export default {
-  name: 'app'
+  name: 'app',
+  data (){
+    return {
+      e1: 'recent',
+      valid: true,
+      login: false, //to toggle for menu
+      loginfunc: false, //for form
+      register: false, //for form
+      signup: '', //value of radio will be sent here when radio checked
+      username: '',
+      usernameRules: [v => !!v || 'username is required'],
+      password: '',
+      passwordRules: [v => !!v || 'password is required'],
+      dropdown: [
+        {title: 'My Bookings'},
+        {title: 'Track Spending'},
+        {title: 'Statistics'},
+        {title: 'Forms'},
+        {title: 'Logout'}
+      ]
+
+    }
+  },
+  created () {
+    // this.login = true
+    if (this.$login != null) {
+      this.login= true
+    }
+  },
+  methods: {
+    router (item) {
+      console.log("router item",item);
+      if (item ==  'home') {
+        window.location.replace('http://localhost:8000')
+      }
+    },
+    loginfunction() {
+      console.log('testing login', this.username, "+ ", this.password)
+      const path = `http://localhost:5000/login/auth`;
+      Vue.prototype.$login = 'airline_staff' //for testing
+      console.log("$login", this.$login);
+      this.changeDropdown() //testing
+      // this.login = true
+      var d = {"email":this.username, "password":this.password};
+      axios.post(path,d)
+        .then(response => {
+          var res = response.data;
+          console.log(res);
+          this.login = true //change this.login = true for menu
+          Vue.prototype.$login = 'typeoflogin'
+          this.changeDropdown()//since login worked, call function to change dropdown
+        })
+        .catch(error => {
+          console.log('login -->', error);
+        });
+    },
+    registerfunction(item) {
+      const path = `http://localhost:5000/register/auth`;
+      console.log("testing register", this.username, "+ ", this.password, this.signup)
+      var d = {"email":this.username, "password":this.password, "name":"noname"};
+      //todo: add fields to registration
+      axios.post(path,d)
+        .then(response => {
+          var res = response.data;
+          console.log(res);
+          this.login = true //change this.login = true for menu
+          Vue.prototype.$login = 'typeoflogin'
+          this.changeDropdown() //since register worked, call function to change dropdown
+        })
+        .catch(error => {
+          console.log('login -->', error);
+        });
+    },
+    changeDropdown() { //where dropdown btns will be shown
+      if (this.$login == 'customer') {
+        this.dropdown = [
+          {title: 'My Bookings'},
+          {title: 'Track Spending'},
+          {title: 'Logout'}
+        ]
+      }
+      if (this.$login == 'booking_agent') {
+        this.dropdown = [
+          {title: 'Bookings'},
+          {title: 'Statistics'},
+          {title: 'Logout'}
+        ]
+      }
+      if (this.$login == 'airline_staff') {
+        this.dropdown = [
+          {title: 'Bookings/Flights'},
+          {title: 'Statistics'},
+          {title: 'Forms'},
+          {title: 'Logout'}
+        ]
+      }
+      this.login = true //login worked, so change menu
+    },
+    dropdownMenu (item) {
+      console.log("item",item);
+      if (item == "Logout") {
+        console.log("logout pressed");
+        console.log("logout-> redirect to homepage");
+      }
+      if (item == "Forms") {
+        window.location.replace('http://localhost:8000/forms')
+      }
+      if (item == "My Bookings") {
+        window.location.replace('http://localhost:8000/bookings')
+      }
+      if (item == "Track Spending") {
+        window.location.replace('http://localhost:8000/spending')
+      }
+      if (item == "Statistics") {
+        window.location.replace('http://localhost:8000/statistics')
+      }
+    }
+  }
 }
 </script>
 
@@ -17,6 +229,5 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 </style>

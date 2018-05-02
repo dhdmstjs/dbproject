@@ -2,8 +2,8 @@
   <div>
     <v-app>
     <v-layout row wrap justify-center>
-    <v-flex xs5 >
-      <h1>Forms</h1><br>
+    <v-flex xs7 >
+      <h1>Track Spending</h1><br>
       <v-expansion-panel>
         <v-expansion-panel-content>
           <div slot="header">Create new flight</div>
