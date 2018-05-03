@@ -72,32 +72,34 @@
 
 
 <!-- data table -->
+<v-layout row wrap justify-center>
     <div class = "dtable" v-if="this.submitbtn==true">
-      <v-data-table
-        :headers="headers"
-        :items="items"
-        hide-actions
-        class="elevation-1">
+      <v-data-table :headers="headers" :items="items" hide-actions class="elevation-1">
         <template slot="items" slot-scope="props">
-          <td class="text-xs-right">{{ props.item.departure_city }}</td>
-          <td class="text-xs-right">{{ props.item.departure_airpot }}</td>
-          <td class="text-xs-right">{{ props.item.arrival_city }}</td>
-          <td class="text-xs-right">{{ props.item.arrival_airport }}</td>
-          <td class="text-xs-right">{{ props.item.datesResult }}</td>
-          <td class="text-xs-right">{{ props.item.airline_name }}</td>
-          <td class="text-xs-right">{{ props.item.flight_num }}</td>
-          <td class="text-xs-right">{{ props.item.price }}</td>
+          <!-- <td class="text-xs-right">{{ props.item.departure_city }}</td> -->
+          <td class="text-xs-center">{{ props.item.departure_airport }}</td>
+          <td class="text-xs-center">{{ props.item.departure_time }}</td>
+
+          <!-- <td class="text-xs-right">{{ props.item.arrival_city }}</td> -->
+          <td class="text-xs-center">{{ props.item.arrival_airport }}</td>
+          <td class="text-xs-center">{{ props.item.arrival_time }}</td>
+
+          <td class="text-xs-center">{{ props.item.airline_name }}</td>
+          <td class="text-xs-center">{{ props.item.flight_num }}</td>
+          <td class="text-xs-center">{{ props.item.price }}</td>
           <td class="justify-center layout px-0">
             <v-btn icon class="mx-0" @click="buyItem(props.item)">
               <v-icon color="pink">add</v-icon>
             </v-btn>
           </td>
         </template>
-        <template slot="no-data">
+        <!-- <template slot="no-data">
           <v-btn color="primary" @click="initialize">Reset</v-btn>
-        </template>
+        </template> -->
       </v-data-table>
     </div>
+</v-layout>
+
     <!-- will only open if booking agent buying ticket -->
     <div v-if="opendialog">
       <v-dialog v-model="dialog" max-width="500px">
@@ -146,13 +148,16 @@ export default {
       flight_num: '',
       flightnumRules: [v => !!v || 'Depart City is required'],
       headers: [
-        { text: 'Departure City', value: 'departure_city' },
+        // { text: 'Departure City', value: 'departure_city' },
         { text: 'Departure Airport', value: 'departure_airport' },
-        { text: 'Arrival City', value: 'arrival_city' },
+        { text: 'Departure Time', value: 'departure_time', sortable: false },
+
+        // { text: 'Arrival City', value: 'arrival_city' },
         { text: 'Arrival Airport', value: 'arrival_airport' },
-        { text: 'Date', value: 'datesResult', sortable: false },
-        { text: 'Airline', value: 'airline_name' },
-        { text: 'Flight Number', value: 'flight_num' },
+        { text: 'Arrival Time', value: 'arrival_time', sortable: false },
+
+        { text: 'Airline', value: 'airline_name', sortable: false },
+        { text: 'Flight Number', value: 'flight_num', sortable: false },
         { text: 'Price', value: 'price' },
         { text: 'Buy', value: 'buyitem' },
       ],
@@ -162,7 +167,6 @@ export default {
   },
   created () {
     this.$login = 'customer'
-    this.initialize()
   },
   methods: {
     submit () {
@@ -179,7 +183,8 @@ export default {
         axios.post(path,d)
           .then(response => {
             var res = response.data;
-            console.log(res);
+            this.items = res;
+            console.log("reponse",this.items);
           })
           .catch(error => {
             console.log('getting flights -->', error);
@@ -196,7 +201,7 @@ export default {
             var res = response.data;
             console.log(res);
             // update table with this data
-            //this.items = res.whateverthing
+            this.items = res
           })
           .catch(error => {
             console.log('getting flights -->', error);
@@ -220,14 +225,26 @@ export default {
         var d = {"airline_name": item.airline_name, "flight_num": this.flight_num}
         //send airline_name && flight_num
         const path = `http://localhost:5000/api/???`; //change path
+        const $this = this
         axios.post(path,d)
           .then(response => {
             var res = response.data; //data sent from server
-            console.log(res);
+            console.log("response ",res);
             //if res == yes then add flight to customer, else don't
+            $this.$swal(
+              'Great!',
+              `You have bought the ticket~`,
+              'success'
+            )
           })
           .catch(error => {
             console.log('getting flights -->', error);
+            $this.$swal({
+              title: 'Error',
+              text: "Please try again",
+              type: 'warning',
+            })
+
           });
 
       }
@@ -253,70 +270,21 @@ export default {
         .then(response => {
           var res = response.data; //data sent from server
           console.log(res);
-          //if res == yes then add flight to customer, else don't
+          //if res == yes then add flight to customer + booking agent, else don't
+          $this.$swal(
+            `You have bought the ticket~`,
+            'success'
+          )
         })
         .catch(error => {
-          console.log('getting flights -->', error);
-        });
+        console.log('getting flights -->', error);
+        $this.$swal({
+          title: 'Error',
+          text: "Please try again",
+          type: 'warning',
+        })
+      });
 
-    },
-    initialize () {
-      this.items = [
-        {
-          departure_city: 'Frozen Yogurt',
-          departure_airpot: 159,
-          arrival_city: 6.0,
-          arrival_airport: 24,
-          datesResult: 4.0,
-          airline_name: 'hello',
-          flight_num: 123,
-          price: 12345
-
-        },
-        {
-          departure_city: 'Ice cream sandwich',
-          departure_airpot: 237,
-          arrival_city: 9.0,
-          arrival_airport: 37,
-          datesResult: 4.3,
-          airline_name: 'hello',
-          flight_num: 123,
-          price: 12345
-
-        },
-        {
-          departure_city: 'Eclair',
-          departure_airpot: 262,
-          arrival_city: 16.0,
-          arrival_airport: 23,
-          datesResult: 6.0,
-          airline_name: 'hello',
-          flight_num: 123,
-          price: 12345
-
-        },
-        {
-          departure_city: 'Cupcake',
-          departure_airpot: 305,
-          arrival_city: 3.7,
-          arrival_airport: 67,
-          datesResult: 4.3,
-          airline_name: 'hello',
-          flight_num: 123,
-          price: 12345
-
-        },
-        {
-          departure_city: 'Gingerbread',
-          departure_airpot: 356,
-          arrival_city: 16.0,
-          arrival_airport: 49,
-          datesResult: 3.9,
-          airline_name: 'hello',
-          flight_num: 123,
-          price: 12345
-        }
-      ]
     },
 
   }

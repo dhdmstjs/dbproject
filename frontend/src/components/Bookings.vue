@@ -1,4 +1,4 @@
-<template>
+airport<template>
   <div>
     <v-app>
     <v-layout row wrap justify-center>
@@ -15,7 +15,7 @@
                 <td class="text-xs-right">{{ props.item.airline_name }}</td>
                 <td class="text-xs-right">{{ props.item.flight_num }}</td>
                 <td class="text-xs-right">{{ props.item.departure_city }}</td>
-                <td class="text-xs-right">{{ props.item.departure_airpot }}</td>
+                <td class="text-xs-right">{{ props.item.departure_airport }}</td>
                 <td class="text-xs-right">{{ props.item.arrival_city }}</td>
                 <td class="text-xs-right">{{ props.item.arrival_airport }}</td>
                 <td class="text-xs-right">{{ props.item.datesResult }}</td>
@@ -39,10 +39,11 @@
                 <td class="text-xs-right">{{ props.item.airline_name }}</td>
                 <td class="text-xs-right">{{ props.item.flight_num }}</td>
                 <td class="text-xs-right">{{ props.item.departure_city }}</td>
-                <td class="text-xs-right">{{ props.item.departure_airpot }}</td>
+                <td class="text-xs-right">{{ props.item.departure_airport }}</td>
+                <td class="text-xs-right">{{ props.item.departure_time }}</td>
                 <td class="text-xs-right">{{ props.item.arrival_city }}</td>
                 <td class="text-xs-right">{{ props.item.arrival_airport }}</td>
-                <td class="text-xs-right">{{ props.item.datesResult }}</td>
+                <td class="text-xs-right">{{ props.item.arrival_time }}</td>
                 <td class="text-xs-right">{{ props.item.price }}</td>
                 <td class="text-xs-right">{{ props.item.status }}</td>
               </template>
@@ -61,9 +62,11 @@
             class="elevation-1">
               <template slot="items" slot-scope="props">
                 <td class="text-xs-right">{{ props.item.flight_num }}</td>
-                <td class="text-xs-right">{{ props.item.departure_airpot }}</td>
+                <td class="text-xs-right">{{ props.item.departure_airport }}</td>
+                <td class="text-xs-right">{{ props.item.departure_time }}</td>
+
                 <td class="text-xs-right">{{ props.item.arrival_airport }}</td>
-                <td class="text-xs-right">{{ props.item.datesResult }}</td>
+                <td class="text-xs-right">{{ props.item.arrival_time }}</td>
                 <td class="text-xs-right">{{ props.item.status }}</td>
               </template>
             <template slot="no-data">
@@ -116,9 +119,12 @@
                       <template slot="items" slot-scope="props">
                         <tr @click="props.expanded = !props.expanded">
                           <td class="text-xs-right">{{ props.item.flight_num }}</td>
-                          <td class="text-xs-right">{{ props.item.departure_airpot }}</td>
+                          <td class="text-xs-right">{{ props.item.departure_airport }}</td>
+                          <td class="text-xs-right">{{ props.item.departure_time }}</td>
+
                           <td class="text-xs-right">{{ props.item.arrival_airport }}</td>
-                          <td class="text-xs-right">{{ props.item.datesResult }}</td>
+                          <td class="text-xs-right">{{ props.item.arrival_time }}</td>
+
                           <td class="text-xs-right">{{ props.item.status }}</td>
                         </tr>
                       </template>
@@ -169,9 +175,12 @@ export default {
         { text: 'Flight Number', value: 'flight_num' },
         { text: 'Departure City', value: 'departure_city' },
         { text: 'Departure Airport', value: 'departure_airport' },
+        { text: 'Departure Time', value: 'departure_time' },
+
         { text: 'Arrival City', value: 'arrival_city' },
         { text: 'Arrival Airport', value: 'arrival_airport' },
-        { text: 'Date', value: 'datesResult', sortable: false },
+        { text: 'Arrival Airport', value: 'arrival_time' },
+
         { text: 'Price', value: 'price' },
         { text: 'Status', value: 'status' },
       ],
@@ -181,24 +190,29 @@ export default {
         { text: 'Flight Number', value: 'flight_num' },
         { text: 'Departure City', value: 'departure_city' },
         { text: 'Departure Airport', value: 'departure_airport' },
+        { text: 'Departure Time', value: 'departure_time' },
+
         { text: 'Arrival City', value: 'arrival_city' },
         { text: 'Arrival Airport', value: 'arrival_airport' },
-        { text: 'Date', value: 'datesResult', sortable: false },
+        { text: 'Arrival Airport', value: 'arrival_time' },
+
         { text: 'Price', value: 'price' },
         { text: 'Status', value: 'status' },
       ],
       headers_airline: [
           { text: 'Flight Number', value: 'flight_num' },
           { text: 'Departure Airport', value: 'departure_airport' },
+          { text: 'Departure Time', value: 'departure_time' },
           { text: 'Arrival Airport', value: 'arrival_airport' },
-          { text: 'Date', value: 'datesResult', sortable: false },
+          { text: 'Arrival Airport', value: 'arrival_time' },
           { text: 'Status', value: 'status' },
         ],
       headers_results: [
           { text: 'Flight Number', value: 'flight_num' },
           { text: 'Departure Airport', value: 'departure_airport' },
+          { text: 'Departure Time', value: 'departure_time' },
           { text: 'Arrival Airport', value: 'arrival_airport' },
-          { text: 'Date', value: 'datesResult', sortable: false },
+          { text: 'Arrival Airport', value: 'arrival_time' },
           { text: 'Status', value: 'status' },
         ],
     }
@@ -225,7 +239,7 @@ export default {
           airline_name: 'hello',
           flight_num: 123,
           departure_city: 'Frozen Yogurt',
-          departure_airpot: 159,
+          departure_airport: 159,
           arrival_city: 6.0,
           arrival_airport: 24,
           datesResult: 4.0,
@@ -237,7 +251,7 @@ export default {
           airline_name: 'hello',
           flight_num: 123,
           departure_city: 'Ice cream sandwich',
-          departure_airpot: 237,
+          departure_airport: 237,
           arrival_city: 9.0,
           arrival_airport: 37,
           datesResult: 4.3,
@@ -250,7 +264,7 @@ export default {
           airline_name: 'hello',
           flight_num: 123,
           departure_city: 'Frozen Yogurt',
-          departure_airpot: 159,
+          departure_airport: 159,
           arrival_city: 6.0,
           arrival_airport: 24,
           datesResult: 4.0,
@@ -262,7 +276,7 @@ export default {
           airline_name: 'hello',
           flight_num: 123,
           departure_city: 'Ice cream sandwich',
-          departure_airpot: 237,
+          departure_airport: 237,
           arrival_city: 9.0,
           arrival_airport: 37,
           datesResult: 4.3,
@@ -275,7 +289,7 @@ export default {
           airline_name: 'hello',
           flight_num: 1234,
           departure_city: 'Frozen Yogurt',
-          departure_airpot: 159,
+          departure_airport: 159,
           arrival_city: 6.0,
           arrival_airport: 24,
           datesResult: 4.0,
@@ -287,7 +301,7 @@ export default {
           airline_name: 'hello',
           flight_num: 123,
           departure_city: 'Ice cream sandwich',
-          departure_airpot: 237,
+          departure_airport: 237,
           arrival_city: 9.0,
           arrival_airport: 37,
           datesResult: 4.3,

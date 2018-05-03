@@ -19,6 +19,11 @@
                       label="Email" v-model="username" :rules="usernameRules" required></v-text-field>
                       <v-text-field
                       label="Password" v-model="password" :rules="passwordRules" required></v-text-field>
+                      <v-radio-group v-model="loginRadio" :mandatory="true">
+                        <v-radio label="Booking Agent" value="booking_agent"></v-radio>
+                        <v-radio label="Airline Staff" value="airline_staff"></v-radio>
+                        <v-radio label="Customer" value="customer"></v-radio>
+                      </v-radio-group>
                     <v-btn @click="loginfunction" :disabled="!valid">Login</v-btn>
                   </v-form>
                 </v-card-text>
@@ -39,7 +44,7 @@
                           label="Email" v-model="username" :rules="usernameRules" required></v-text-field>
                           <v-text-field
                           label="Password" v-model="password" :rules="passwordRules" required></v-text-field>
-                          <v-radio-group v-model="signup" :mandatory="false">
+                          <v-radio-group v-model="signup" :mandatory="true">
                             <v-radio label="Booking Agent" value="booking_agent"></v-radio>
                             <v-radio label="Airline Staff" value="airline_staff"></v-radio>
                             <v-radio label="Customer" value="customer"></v-radio>
@@ -110,6 +115,7 @@ export default {
       loginfunc: false, //for form
       register: false, //for form
       signup: '', //value of radio will be sent here when radio checked
+      loginRadio: '', //value of radio for login
       username: '',
       usernameRules: [v => !!v || 'username is required'],
       password: '',
