@@ -163,28 +163,29 @@ export default {
       ],
      items: [],
      submitbtn: false, //toggle for table add it to after axios response
+      session: '',
     }
   },
   created () {
     this.$login = 'customer'
   },
   methods: {
-    submit () {
+    submit() {
       this.submitbtn = true
       console.log("thisRef", this.$refs.form.validate());
       console.log("thisRef", this.$refs.form2.validate());
 
       if (this.$refs.form.validate()) { //search flights
-        console.log("this.depart",this.depart);
-        console.log("this.arrive",this.arrive);
-        console.log("this.date",this.date);
+        console.log("this.depart", this.depart);
+        console.log("this.arrive", this.arrive);
+        console.log("this.date", this.date);
         const path = `http://localhost:5000/api/getflights`;
-        var d = {"depart":this.depart,"arrive":this.arrive,"date":this.date};
-        axios.post(path,d)
+        var d = {"depart": this.depart, "arrive": this.arrive, "date": this.date};
+        axios.post(path, d)
           .then(response => {
             var res = response.data;
             this.items = res;
-            console.log("reponse",this.items);
+            console.log("reponse", this.items);
           })
           .catch(error => {
             console.log('getting flights -->', error);
@@ -192,11 +193,11 @@ export default {
       }
 
       if (this.$refs.form2.validate()) { //check flight status
-        console.log("this.depart",this.flight_num);
-        console.log("this.arrive",this.date2);
+        console.log("this.depart", this.flight_num);
+        console.log("this.arrive", this.date2);
         const path = `http://localhost:5000/api/getflights`;
-        var d = {"flight_num":this.flight_num,"date":this.date2};
-        axios.post(path,d)
+        var d = {"flight_num": this.flight_num, "date": this.date2};
+        axios.post(path, d)
           .then(response => {
             var res = response.data;
             console.log(res);
@@ -208,12 +209,14 @@ export default {
           });
       }
     },
-    clear () {
+    clear() {
+      this.getSessionVars();
+      console.log('go');
       this.$refs.form.reset()
     },
-    buyItem (item) {
+    buyItem(item) {
       const index = this.items.indexOf(item);
-      console.log("item",item);
+      console.log("item", item);
       let val = confirm('Are you sure you want to buy this item?')
       console.log("this.$login", this.$login);
       if (this.$login == null && val == true) { //user hasn't logged in && wants to buy
@@ -221,15 +224,15 @@ export default {
         confirm('Make sure to log in first')
       }
       if (this.$login == 'customer' && val == true) { // wants to buy ticket
-        console.log("val",val);
+        console.log("val", val);
         var d = {"airline_name": item.airline_name, "flight_num": this.flight_num}
         //send airline_name && flight_num
         const path = `http://localhost:5000/api/???`; //change path
         const $this = this
-        axios.post(path,d)
+        axios.post(path, d)
           .then(response => {
             var res = response.data; //data sent from server
-            console.log("response ",res);
+            console.log("response ", res);
             //if res == yes then add flight to customer, else don't
             $this.$swal(
               'Great!',
@@ -249,7 +252,7 @@ export default {
 
       }
       if (this.$login == 'booking_agent' && val == true) { // wants to buy ticket
-        console.log("val",val);
+        console.log("val", val);
         this.opendialog = true
         this.dialog = true
         this.buyItemCustomer(val)
@@ -263,10 +266,14 @@ export default {
     buyItemCustomer(item) {
       let email = this.cust_email_dialog
       console.log("email", email);
-      var d = {"airline_name": item.airline_name, "flight_num": this.flight_num, "cutomer_email": this.cust_email_dialog}
+      var d = {
+        "airline_name": item.airline_name,
+        "flight_num": this.flight_num,
+        "cutomer_email": this.cust_email_dialog
+      }
       //send airline_name && flight_num
       const path = `http://localhost:5000/api/???`; //change path
-      axios.post(path,d)
+      axios.post(path, d)
         .then(response => {
           var res = response.data; //data sent from server
           console.log(res);
@@ -277,16 +284,27 @@ export default {
           )
         })
         .catch(error => {
-        console.log('getting flights -->', error);
-        $this.$swal({
-          title: 'Error',
-          text: "Please try again",
-          type: 'warning',
-        })
-      });
+          console.log('getting flights -->', error);
+          $this.$swal({
+            title: 'Error',
+            text: "Please try again",
+            type: 'warning',
+          })
+        });
 
     },
-
+    getSessionVars() {
+      const path = `http://localhost:5000/session/vars`;
+      axios.post(path)
+        .then(response => {
+          let res = response.data;
+          console.log("res" ,res);
+          this.session = res
+        })
+        .catch(error => {
+          console.log('getting session vars-->', error);
+        });
+    },
   }
 }
 </script>

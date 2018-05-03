@@ -14,7 +14,7 @@ class CustomFlask(Flask):
     variable_start_string='!!',
     variable_end_string='!!'
   ))
-app = CustomFlask(__name__, template_folder=os.path.abspath('frontend'))
+app = CustomFlask(__name__, static_folder = "./dist/static", template_folder = "./dist")
 
 cors = CORS(app)
 
@@ -170,6 +170,13 @@ def loginAuth():
     print(cursor._last_executed)
     cursor.close()
     return json.dumps({"success" : login, "message" : message, "username":rec['email'], "role":rec['typ']})
+
+@app.route('/session/vars', methods=['GET', 'POST'])
+def send_session_vars():
+    username = ''
+    if 'username' in session:
+        username = session['username']
+    return json.dumps({"username":username})
 
 
 @app.route('/', defaults={'path': ''})
