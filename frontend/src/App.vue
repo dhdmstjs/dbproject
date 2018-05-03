@@ -44,11 +44,63 @@
                           label="Email" v-model="username" :rules="usernameRules" required></v-text-field>
                           <v-text-field
                           label="Password" v-model="password" :rules="passwordRules" required></v-text-field>
-                          <v-radio-group v-model="signup" :mandatory="true">
+                          <v-radio-group v-model="signup" :mandatory="true" v-bind.sync="this.radiocheck='true'">
                             <v-radio label="Booking Agent" value="booking_agent"></v-radio>
                             <v-radio label="Airline Staff" value="airline_staff"></v-radio>
                             <v-radio label="Customer" value="customer"></v-radio>
                           </v-radio-group>
+                          <div v-if="radiocheck" >
+                            <div v-if="this.signup=='booking_agent'">
+                              <v-text-field
+                              label="Booking Agent ID" v-model="booking_agent_id" required></v-text-field>
+                            </div>
+                            <div v-else-if="this.signup=='airline_staff'">
+                              <v-text-field
+                              label="First Name" v-model="first_name" required></v-text-field>
+                              <v-text-field
+                              label="Last Name" v-model="last_name" required></v-text-field>
+                              <v-text-field
+                              label="Airline Name" v-model="airline_name" required></v-text-field>
+                              <v-menu ref="menu2" lazy :close-on-content-click="false" v-model="menu2" transition="scale-transition" offset-y
+                                full-width :nudge-right="40" min-width="290px" :return-value.sync="dob">
+                                <v-text-field slot="activator" label="Date of Birth" v-model="dob" readonly></v-text-field>
+                                <v-date-picker v-model="dob" scrollable>
+                                  <v-spacer></v-spacer>
+                                  <v-btn flat color="primary" @click="dob = false">Cancel</v-btn>
+                                  <v-btn flat color="primary" @click="$refs.menu2.save(dob)">OK</v-btn>
+                                </v-date-picker>
+                              </v-menu>
+                            </div>
+                            <div v-else-if="this.signup=='customer'">
+                              <v-text-field
+                              label="Name" v-model="name" required></v-text-field>
+                              <v-text-field
+                              label="Building Number" v-model="building_number" required></v-text-field>
+                              <v-text-field
+                              label="Street" v-model="street" required></v-text-field>
+                              <v-text-field
+                              label="City" v-model="city" required></v-text-field>
+                              <v-text-field
+                              label="State" v-model="state" required></v-text-field>
+                              <v-text-field
+                              label="Phone Number" v-model="phone_number" required></v-text-field>
+                              <v-text-field
+                              label="Passport Number" v-model="passport_number" required></v-text-field>
+                              <v-text-field
+                              label="Passport Expiration" v-model="passport_expiration" required></v-text-field>
+                              <v-text-field
+                               label="Passport Country" v-model="passport_country" required></v-text-field>
+                              <v-menu ref="menu1" lazy :close-on-content-click="false" v-model="menu1" transition="scale-transition" offset-y
+                                full-width :nudge-right="40" min-width="290px" :return-value.sync="dob">
+                                <v-text-field slot="activator" label="Date of Birth" v-model="dob" readonly></v-text-field>
+                                <v-date-picker v-model="dob" scrollable>
+                                  <v-spacer></v-spacer>
+                                  <v-btn flat color="primary" @click="dob = false">Cancel</v-btn>
+                                  <v-btn flat color="primary" @click="$refs.menu1.save(dob)">OK</v-btn>
+                                </v-date-picker>
+                              </v-menu>
+                            </div>
+                          </div>
                         <v-btn @click="registerfunction" :disabled="!valid">Register</v-btn>
                       </v-form>
                     </v-card-text>
@@ -111,6 +163,7 @@ export default {
     return {
       e1: 'recent',
       valid: true,
+      radiocheck: false, //toggle for type of registration
       login: false, //to toggle for menu
       loginfunc: false, //for form
       register: false, //for form
@@ -126,7 +179,23 @@ export default {
         {title: 'Statistics'},
         {title: 'Forms'},
         {title: 'Logout'}
-      ]
+      ],
+      name: null,
+      building_number:null,
+      street: null,
+      city: null,
+      state: null,
+      phone_number: null,
+      passport_number: null,
+      passport_expiration: null,
+      passport_country: null,
+      dob: null,
+      menu1: false, //menu for dob picker
+      first_name: null,
+      last_name: null,
+      airline_name:null,
+      menu2: false,
+      booking_agent_id: null,
 
     }
   },
