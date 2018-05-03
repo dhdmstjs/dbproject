@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, session, url_for, redirect, jsonify, flash
+from psycopg2 import sql
 from flask_cors import CORS
 import os
 import sys
@@ -28,8 +29,9 @@ conn = pymysql.connect(host='localhost',
 ###
 #with app.app_context():
 #    cursor = conn.cursor()
-#    query = 'insert into customer values("colton@nyu","colton","password","test","test","test","test","test","test","2020-04-01","test","1996-02-09")'
-#    cursor.execute(query)
+#    query = 'SELECT * FROM airline_staff WHERE username = %s'
+#    args = ("colton",)
+#    cursor.execute(query, args)
 #    conn.commit()
 #### 
 
@@ -69,37 +71,70 @@ def create_flight():
     
     return json.dumps({"success":"true", "message": "Flight inserted successfully"})
 
-@app.route('/api/)
+@app.route('/api/changeflightstatus', methods=['GET','POST'])
+def change_flight_status():
+    pass
+
+@app.route('/api/addairplane', methods=['GET','POST'])
+def add_airplane():
+    pass
+
+@app.route('/api/addairport', methods=['GET','POST'])
+def add_airport():
+    pass
 
 @app.route('/register/auth', methods = ['GET', 'POST'])
 def registerAuth():
+    global rec
     rec = request.json
     cursor = conn.cursor()
-    query = 'SELECT * FROM customer WHERE email = %s'
+    if rec['typ'] == "customer":
+        query = 'SELECT * FROM customer WHERE email = %s'
+    elif rec['typ'] == "booking_agent":
+        query = 'SELECT * FROM booking_agent WHERE email = %s'
+    else:
+        query = 'SELECT * FROM airline_staff WHERE username = %s'
+    args = (rec['email'],)
     try:
-        cursor.execute(query, (rec['email']))
+        cursor.execute(query, args)
     except Exception as e:
         print(e)
+        print(cursor._last_executed)
         return json.dumps({"success":"false", "message": "database query failed"})
     data = cursor.fetchone()
     if data:
         return json.dumps({"success":"false", "message":"This user already exists in the database"})  
-    query = 'insert into customer values(%s,%s,%s,"test","test","test","test","test","test","2020-04-01","test","1996-02-09")'
+    
+    #Else, not in database so proceed with insertion
     hashed_pass = hash_password(rec['password'])
+    if rec['typ'] == "customer":
+        query = 'insert into customer values(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)'
+        args = (rec['email'], rec['name'],hashed_pass,rec['building_number'], rec['street'],rec['city'],rec['state'],
+                rec['phone_number'],rec['passport_number'],rec['passport_expiration'],rec['passport_country'],rec['dob'])
+    elif rec['typ'] == "airline_staff":
+        query = 'insert into airline_staff values(%s,%s,%s,%s,%s,%s)'
+        args = (rec['email'], hashed_pass, rec['first_name'], rec['last_name'], rec['dob'], rec['airline_name'])
+    elif rec['typ'] == "booking_agent":
+        query = 'insert into booking_agent values(%s,%s,%s)'
+        args = (rec['email'], hashed_pass, rec['booking_agent_id'])
+    for a in args:
+            if not a:
+                print(args)
+                return json.dumps({"success":"false", "message": "please submit all of the required fields"})
     cursor = conn.cursor()
     try:
-        cursor.execute(query, (rec['email'], rec['name'], hashed_pass))
+        cursor.execute(query, args)
         conn.commit()
     except Exception as e:
         print(e)
-        return json.dumps({"success":"false", "message":"database operation failed"})
-    return json.dumps({"success":"true", "message":"Registration successfull"})
-    
+        print(cursor._last_executed)
+        return json.dumps({"success":"false", "message":"database insertion failed"})
+    return json.dumps({"success":"true", "message":"Registration successfull"})    
 
 @app.route('/login/auth', methods=['GET', 'POST'])
 def loginAuth():
 	#grabs information from the forms
-    global data
+    global rec
     rec = request.json
     username = rec['email']
     password = rec['password']
@@ -107,13 +142,13 @@ def loginAuth():
     message = "login successful"
     cursor = conn.cursor()
     #todo: choose query based on radio button
-    typ = "customer"
+    typ = rec['typ']
     
     if typ == "customer":
         query = 'SELECT email,password FROM customer WHERE email = %s'
-    elif typ == "booking_agent":
+    elif typ == "airline_staff":
         query = 'SELECT * FROM airline_staff WHERE username = %s'
-    else:
+    elif typ == "booking_agent":
         query = 'SELECT * FROM booking_agent WHERE email = %s'
     try:
         cursor.execute(query, (username))
@@ -132,9 +167,9 @@ def loginAuth():
     else:
         message = "user not found"
         login = "false"
-        
+    print(cursor._last_executed)
     cursor.close()
-    return json.dumps({"success" : login, "message" : message})
+    return json.dumps({"success" : login, "message" : message, "username":rec['email'], "role":rec['typ']})
 
 
 @app.route('/', defaults={'path': ''})

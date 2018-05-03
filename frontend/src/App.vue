@@ -181,7 +181,7 @@ export default {
         {title: 'Logout'}
       ],
       name: null,
-      building_number:null,
+      building_number: null,
       street: null,
       city: null,
       state: null,
@@ -219,7 +219,7 @@ export default {
       console.log("$login", this.$login);
       this.changeDropdown() //testing
       // this.login = true
-      var d = {"email":this.username, "password":this.password};
+      var d = {"email":this.username, "password":this.password, "typ":this.loginRadio};
       axios.post(path,d)
         .then(response => {
           var res = response.data;
@@ -234,8 +234,23 @@ export default {
     },
     registerfunction(item) {
       const path = `http://localhost:5000/register/auth`;
-      console.log("testing register", this.username, "+ ", this.password, this.signup)
-      var d = {"email":this.username, "password":this.password, "name":"noname"};
+      var d = {'email': this.username,
+        'password': this.password,
+        'typ': this.signup,
+        'name': this.name,
+        'building_number': this.building_number,
+        'street': this.street,
+        'city': this.city,
+        'state': this.state,
+        'phone_number': this.phone_number,
+        'passport_number': this.passport_number,
+        'passport_expiration': this.passport_expiration,
+        'passport_country': this.passport_country,
+        'dob': this.dob,
+        'first_name': this.first_name,
+        'last_name': this.last_name,
+        'airline_name': this.airline_name,
+        'booking_agent_id': this.booking_agent_id};
       //todo: add fields to registration
       axios.post(path,d)
         .then(response => {

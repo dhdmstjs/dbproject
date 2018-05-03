@@ -13,3 +13,8 @@ def check_password(hashed_password, user_password):
     password, salt = hashed_password.split(':')
     return (password == hashlib.md5(salt.encode() + user_password.encode()).hexdigest())
 
+
+def validate_args_exist(obj):
+    for o in obj:
+        if not o:
+            return False
