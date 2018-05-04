@@ -3,7 +3,7 @@ airport<template>
     <v-app>
     <v-layout row wrap justify-center>
       <v-flex xs12 >
-        <h1>Bookings</h1><br>
+        <h1>Upcoming Flights</h1><br>
 
         <div v-if="this.$login=='customer'">
           <v-data-table
@@ -22,9 +22,7 @@ airport<template>
                 <td class="text-xs-right">{{ props.item.price }}</td>
                 <td class="text-xs-right">{{ props.item.status }}</td>
               </template>
-            <template slot="no-data">
-              <v-btn color="primary" @click="initialize">Reset</v-btn>
-            </template>
+
           </v-data-table>
         </div>
 
@@ -48,9 +46,7 @@ airport<template>
                 <td class="text-xs-right">{{ props.item.status }}</td>
               </template>
 
-            <template slot="no-data">
-              <v-btn color="primary" @click="initialize">Reset</v-btn>
-            </template>
+
           </v-data-table>
         </div>
 
@@ -69,9 +65,9 @@ airport<template>
                 <td class="text-xs-right">{{ props.item.arrival_time }}</td>
                 <td class="text-xs-right">{{ props.item.status }}</td>
               </template>
-            <template slot="no-data">
+            <!-- <template slot="no-data">
               <v-btn color="primary" @click="initialize">Reset</v-btn>
-            </template>
+            </template> -->
           </v-data-table>
           <br><br><br>
 
@@ -131,11 +127,9 @@ airport<template>
                       <template slot="expand" slot-scope="props">
                         <v-card flat>
                           <v-card-text>Customers: list all customer emails here for that flight</v-card-text>
+                          <!-- {{props.item.customers}} -->
                         </v-card>
                       </template>
-                    <template slot="no-data">
-                      <v-btn color="primary" @click="initialize">Reset</v-btn>
-                    </template>
                   </v-data-table>
                 </div>
                 <br><br><br>
@@ -163,6 +157,7 @@ export default {
       items_customer: [],
       items_booking: [],
       items_airline: [],
+      items: [], //for airline staff search data
       menu1: false,
       menu2: false,
       date1: null, //start date
@@ -179,7 +174,7 @@ export default {
 
         { text: 'Arrival City', value: 'arrival_city' },
         { text: 'Arrival Airport', value: 'arrival_airport' },
-        { text: 'Arrival Airport', value: 'arrival_time' },
+        { text: 'Arrival Time', value: 'arrival_time' },
 
         { text: 'Price', value: 'price' },
         { text: 'Status', value: 'status' },
@@ -194,7 +189,7 @@ export default {
 
         { text: 'Arrival City', value: 'arrival_city' },
         { text: 'Arrival Airport', value: 'arrival_airport' },
-        { text: 'Arrival Airport', value: 'arrival_time' },
+        { text: 'Arrival Time', value: 'arrival_time' },
 
         { text: 'Price', value: 'price' },
         { text: 'Status', value: 'status' },
@@ -204,7 +199,7 @@ export default {
           { text: 'Departure Airport', value: 'departure_airport' },
           { text: 'Departure Time', value: 'departure_time' },
           { text: 'Arrival Airport', value: 'arrival_airport' },
-          { text: 'Arrival Airport', value: 'arrival_time' },
+          { text: 'Arrival Time', value: 'arrival_time' },
           { text: 'Status', value: 'status' },
         ],
       headers_results: [
@@ -212,103 +207,70 @@ export default {
           { text: 'Departure Airport', value: 'departure_airport' },
           { text: 'Departure Time', value: 'departure_time' },
           { text: 'Arrival Airport', value: 'arrival_airport' },
-          { text: 'Arrival Airport', value: 'arrival_time' },
+          { text: 'Arrival Time', value: 'arrival_time' },
           { text: 'Status', value: 'status' },
         ],
+
     }
   },
   created () {
     this.$login = 'airline_staff'
+    // this.$login = 'booking_agent'
+    // this.$login = 'customer'
+
     console.log("this", this.$login);
-    this.initialize()
     //call from db type of login
     //this.$login = ''
+    // this.callData() //calls data for bookings
   },
   methods: {
+    callData(){
+      const path = `http://localhost:5000/api/####`
+      var d = {
+        "login_type": this.$login,
+        "page_type": "bookings"
+      }
+      axios.post(path, d)
+        .then(response => {
+          var res = response.data //give me login_usertype,
+          console.log(res);
+          if (res.login_usertype == 'customer') {
+            //this.items_customer = res.dataitems
+          }
+          if (res.login_usertype == 'booking_agent') {
+            //this.items_booking = res.dataitems
+          }
+          if (res.login_usertype == 'airline_staff') {
+            //this.items_airline = res.dataitems
+          }
+        })
+        .catch(error => {
+          console.log("error changing status");
+        })
+    },
     submit (){
-      if (this.$refs.form.validate()) { //search flights
+      if (this.$refs.form.validate()) { //search flights for staff
         this.showFlights = true
+        const path = `http://localhost:5000/api/getflights`
+        var d = {
+          "departure": this.departure,
+          "arrival": this.arrival,
+          "departure_time": this.date1,
+          "arrival_time": this.date2
+        }
+        axios.post(path, d)
+          .then(response => {
+            var res = response.data //return flights
+            console.log(res);
+            //this.items = res.dataitems
+          })
+          .catch(error => {
+            console.log("error getting flights");
+          })
       }
     },
     clear () {
       this.$refs.form.reset()
-    },
-    initialize () {
-      this.items_customer = [
-        {
-          airline_name: 'hello',
-          flight_num: 123,
-          departure_city: 'Frozen Yogurt',
-          departure_airport: 159,
-          arrival_city: 6.0,
-          arrival_airport: 24,
-          datesResult: 4.0,
-          price: 12345,
-          status: 'hihi'
-
-        },
-        {
-          airline_name: 'hello',
-          flight_num: 123,
-          departure_city: 'Ice cream sandwich',
-          departure_airport: 237,
-          arrival_city: 9.0,
-          arrival_airport: 37,
-          datesResult: 4.3,
-          price: 12345,
-          status: 'hihi'
-        }
-      ]
-      this.items_airline = [
-        {
-          airline_name: 'hello',
-          flight_num: 123,
-          departure_city: 'Frozen Yogurt',
-          departure_airport: 159,
-          arrival_city: 6.0,
-          arrival_airport: 24,
-          datesResult: 4.0,
-          price: 12345,
-          status: 'hihi'
-
-        },
-        {
-          airline_name: 'hello',
-          flight_num: 123,
-          departure_city: 'Ice cream sandwich',
-          departure_airport: 237,
-          arrival_city: 9.0,
-          arrival_airport: 37,
-          datesResult: 4.3,
-          price: 12345,
-          status: 'hihi'
-        }
-      ]
-      this.items_results = [
-        {
-          airline_name: 'hello',
-          flight_num: 1234,
-          departure_city: 'Frozen Yogurt',
-          departure_airport: 159,
-          arrival_city: 6.0,
-          arrival_airport: 24,
-          datesResult: 4.0,
-          price: 12345,
-          status: 'hihi'
-
-        },
-        {
-          airline_name: 'hello',
-          flight_num: 123,
-          departure_city: 'Ice cream sandwich',
-          departure_airport: 237,
-          arrival_city: 9.0,
-          arrival_airport: 37,
-          datesResult: 4.3,
-          price: 12345,
-          status: 'hihi'
-        }
-      ]
     },
 
   }

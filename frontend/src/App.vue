@@ -44,7 +44,7 @@
                           label="Email" v-model="username" :rules="usernameRules" required></v-text-field>
                           <v-text-field
                           label="Password" v-model="password" :rules="passwordRules" required></v-text-field>
-                          <v-radio-group v-model="signup" :mandatory="true" v-bind.sync="this.radiocheck='true'">
+                          <v-radio-group v-model="signup" :mandatory="true" v-bind:this.radiocheck.sync="this.radiocheck='true'">
                             <v-radio label="Booking Agent" value="booking_agent"></v-radio>
                             <v-radio label="Airline Staff" value="airline_staff"></v-radio>
                             <v-radio label="Customer" value="customer"></v-radio>
@@ -201,6 +201,7 @@ export default {
   },
   created () {
     // this.login = true
+    this.getSessionVars()
     if (this.$login != null) {
       this.login= true
     }
@@ -225,7 +226,7 @@ export default {
           var res = response.data;
           console.log(res);
           this.login = true //change this.login = true for menu
-          Vue.prototype.$login = 'typeoflogin'
+          this.getSessionVars()
           this.changeDropdown()//since login worked, call function to change dropdown
         })
         .catch(error => {
@@ -257,11 +258,23 @@ export default {
           var res = response.data;
           console.log(res);
           this.login = true //change this.login = true for menu
-          Vue.prototype.$login = 'typeoflogin'
+          this.getSessionVars()
           this.changeDropdown() //since register worked, call function to change dropdown
         })
         .catch(error => {
           console.log('login -->', error);
+        });
+    },
+    getSessionVars() {
+      const path = `http://localhost:5000/session/vars`;
+      axios.post(path)
+        .then(response => {
+          let res = response.data;
+          console.log("res" ,res);
+          Vue.prototype.$login = res
+        })
+        .catch(error => {
+          console.log('getting session vars-->', error);
         });
     },
     changeDropdown() { //where dropdown btns will be shown
@@ -292,8 +305,18 @@ export default {
     dropdownMenu (item) {
       console.log("item",item);
       if (item == "Logout") {
-        console.log("logout pressed");
-        console.log("logout-> redirect to homepage");
+        const path = `http://localhost:5000/api/####`
+        var d = {
+          "user_logout": true,
+        }
+        axios.post(path, d)
+          .then (response => {
+            $this.$swal(
+              `You Logged Out`,
+              'success'
+            )
+            window.location.replace('http://localhost:8000/')
+          })
       }
       if (item == "Forms") {
         window.location.replace('http://localhost:8000/forms')

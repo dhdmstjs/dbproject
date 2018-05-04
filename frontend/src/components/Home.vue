@@ -161,8 +161,8 @@ export default {
         { text: 'Price', value: 'price' },
         { text: 'Buy', value: 'buyitem' },
       ],
-     items: [],
-     submitbtn: false, //toggle for table add it to after axios response
+      items: [],
+      submitbtn: false, //toggle for table add it to after axios response
       session: '',
     }
   },
@@ -233,11 +233,19 @@ export default {
             var res = response.data; //data sent from server
             console.log("response ", res);
             //if res == yes then add flight to customer, else don't
-            $this.$swal(
-              'Great!',
-              `You have bought the ticket~`,
-              'success'
-            )
+            if (res.success=='false') {
+              $this.$swal({
+                title: 'Error',
+                text: res.message,
+                type: 'warning',
+              })
+            } else if (res.success='true'){
+              $this.$swal(
+                'Great!',
+                `You have bought the ticket~`,
+                'success'
+              )
+            }
           })
           .catch(error => {
             console.log('getting flights -->', error);

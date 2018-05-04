@@ -159,15 +159,11 @@ export default {
       airport_name: '',
       airport_city: '',
       seats: '',
-      depart: '',
-      departRules: [v => !!v || 'Depart City is required'],
-      arrive: '',
-      arriveRules: [v => !!v || 'Depart City is required'],
     }
   },
 
   methods: {
-    submit1(item) {
+    submit1(item) { //create new flight
       console.log("item", item);
       if (this.$refs.form1.validate()) {
         console.log(
@@ -184,7 +180,18 @@ export default {
           this.airplane_id
         );
         const path = `http://localhost:5000/api/createflight`;
-        var d = {"airline_name":this.airline_name, "flight_num":this.flight_num, "departure_airport":this.departure_airport, "date1":this.date1, "time1":this.time1, "date2":this.date2, "time2":this.time2, "arrival_airport":this.arrival_airport, "price":this.price, "flight_status":this.flight_status, "airplane_id":this.airplane_id};
+        var d = {
+          "airline_name":this.airline_name,
+          "flight_num":this.flight_num,
+          "departure_airport":this.departure_airport,
+          "date1":this.date1,
+          "time1":this.time1,
+          "date2":this.date2,
+          "time2":this.time2,
+          "arrival_airport":this.arrival_airport,
+          "price":this.price,
+          "flight_status":this.flight_status,
+          "airplane_id":this.airplane_id};
         console.log(d);
         axios.post(path,d)
           .then(response => {
@@ -197,34 +204,79 @@ export default {
           });
       }
     },
-    submit2(item) {
+    submit2(item) { //change flight status
       if (this.$refs.form2.validate()) {
         console.log(
           this.airline_name,
           this.flight_num,
           this.flight_status,
         );
+        const path = `http://localhost:5000/api/changeflightstatus`
+        var d = {
+          "airline_name": this.airline_name,
+          "flight_num": this.flight_num,
+          "flight_status": this.flight_status
+        }
+        axios.post(path, d)
+          .then(response => {
+            var res = response.data
+            console.log(res);
+          })
+          .catch(error => {
+            console.log("error changing status");
+          })
       }
     },
-    submit3(item) {
+    submit3(item) { //add plane
       if (this.$refs.form3.validate()) {
         console.log(
           this.airline_name,
           this.airplane_id,
           this.seats,
         );
+        const path = `http://localhost:5000/api/addairplane`
+        var d = {
+          "airline_name": this.airline_name,
+          "airplane_id": this.airplane_id,
+          "seats": this.seats
+        }
+        axios.post(path, d)
+          .then(response => {
+            var res = response.data
+            console.log(res);
+          })
+          .catch(error => {
+            console.log("error adding airplane");
+          })
       }
     },
-    submit4(item) {
+    submit4(item) { //add airport
       if (this.$refs.form4.validate()) {
         console.log(
           this.airport_name,
           this.airport_city,
         );
       }
+      const path = `http://localhost:5000/api/addairport`
+      var d = {
+        "airport_name": this.airport_name,
+        "airport_city": this.airport_city,
+      }
+      axios.post(path, d)
+        .then(response => {
+          var res = response.data
+          console.log(res);
+        })
+        .catch(error => {
+          console.log("error adding airport");
+        })
     },
     clear () {
       this.$refs.form1.reset()
+      this.$refs.form2.reset()
+      this.$refs.form3.reset()
+      this.$refs.form4.reset()
+
     },
   }
 }
