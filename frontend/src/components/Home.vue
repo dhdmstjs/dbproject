@@ -210,8 +210,7 @@ export default {
       }
     },
     clear() {
-      this.getSessionVars();
-      console.log('go');
+      console.log(this.getSessionVars());
       this.$refs.form.reset()
     },
     buyItem(item) {
@@ -225,9 +224,9 @@ export default {
       }
       if (this.$login == 'customer' && val == true) { // wants to buy ticket
         console.log("val", val);
-        var d = {"airline_name": item.airline_name, "flight_num": this.flight_num}
+        var d = {"airline_name": item.airline_name, "flight_num": item.flight_num};
         //send airline_name && flight_num
-        const path = `http://localhost:5000/api/???`; //change path
+        const path = `http://localhost:5000/purchase/ticket`; //change path
         const $this = this
         axios.post(path, d)
           .then(response => {
@@ -268,11 +267,11 @@ export default {
       console.log("email", email);
       var d = {
         "airline_name": item.airline_name,
-        "flight_num": this.flight_num,
+        "flight_num": item.flight_num,
         "cutomer_email": this.cust_email_dialog
       }
       //send airline_name && flight_num
-      const path = `http://localhost:5000/api/???`; //change path
+      const path = `http://localhost:5000/purchase/ticket`; //change path
       axios.post(path, d)
         .then(response => {
           var res = response.data; //data sent from server
