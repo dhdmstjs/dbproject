@@ -30,14 +30,17 @@ conn = pymysql.connect(host='localhost',
 ###
 #with app.app_context():
 #    flight_num = "01010"#rec['flight_num']
-#    query = "SELECT * FROM flight natural join ticket where ticket_id NOT IN (SELECT ticket_id FROM ticket natural join purchases) and flight_num = %s"
-#    args = (flight_num)
+#    query = 'SELECT airline_name, flight_num, purchase_date, departure_airport, departure_time, arrival_airport, status FROM purchases natural join ticket natural join flight WHERE departure_time > %s and customer_email = %s;'
+#    username = "colton@nyu"
+#    args = (today_date(), username)
 #    cursor = conn.cursor()
 #    try:
 #        cursor.execute(query, args)
 #    except Exception as e:
 #        print(e)
-#   data = cursor.fetchall()
+#        print(cursor._last_executed)
+#    data = cursor.fetchall()
+#    print(data)
 #### 
 
 @app.route('/api/getflights', methods=['GET', 'POST'])
@@ -188,6 +191,44 @@ def send_session_vars():
         role = ""
     return json.dumps({"username":username, "role":role})
 
+@app.route('/api/customerflights', methods = ['GET', 'POST'])
+def get_customer_flights():
+#    if "username" not in session:
+#        return json.dumps({"success":"false", "message": "You must be logged in"})
+    rec = request.json
+    username = rec['username']#session['username']
+    query = 'SELECT airline_name, flight_num, purchase_date, departure_airport, departure_time, arrival_airport, status FROM purchases natural join ticket natural join flight WHERE departure_time > %s and customer_email = %s;'
+    args = (today_date(), username)
+    cursor = conn.cursor()
+    try:
+        cursor.execute(query, args)
+    except Exception as e:
+        print(e)
+        print(cursor._last_executed)
+        return json.dumps({"success":"false", "message": "database query failed"})
+    data = cursor.fetchall()
+    print(data)
+    return json.dumps({"success":"true", "message": "query successful", "data" : data})
+
+@app.route('api/bookingagentflights', methods = ['GET', 'POST'])
+def get_booking_agent_flights():
+#    if "username" not in session:
+#        return json.dumps({"success":"false", "message": "You must be logged in"})
+    rec = request.json
+    username = "c"#rec['username']#session['username']
+    query = 'SELECT airline_name, flight_num, purchase_date, departure_airport, departure_time, arrival_airport, status FROM purchases natural join ticket natural join flight WHERE departure_time > %s and booking_agent_id = %s;'
+    args = (today_date(), username)
+    cursor = conn.cursor()
+    try:
+        cursor.execute(query, args)
+    except Exception as e:
+        print(e)
+        print(cursor._last_executed)
+        return json.dumps({"success":"false", "message": "database query failed"})
+    data = cursor.fetchall()
+    print(data)
+    return json.dumps({"success":"true", "message": "query successful", "data" : data})
+    
 @app.route('/api/customerspending', methods = ['GET','POST'])
 def get_customer_spending():
 #    if "username" not in session:
