@@ -4,7 +4,7 @@ from flask_cors import CORS
 import os
 import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from static.python.helpers import hash_password,check_password, today_date, validate_args_exist
+from static.python.helpers import hash_password,check_password, today_date, validate_args_exist, DecimalEncoder, dates_to_array
 import pymysql.cursors
 import json
 
@@ -14,6 +14,7 @@ class CustomFlask(Flask):
     variable_start_string='!!',
     variable_end_string='!!'
   ))
+  
 app = CustomFlask(__name__, static_folder = "./dist/static", template_folder = "./dist")
 
 cors = CORS(app)
@@ -36,7 +37,7 @@ conn = pymysql.connect(host='localhost',
 #        cursor.execute(query, args)
 #    except Exception as e:
 #        print(e)
-#    data = cursor.fetchall()
+#   data = cursor.fetchall()
 #### 
 
 @app.route('/api/getflights', methods=['GET', 'POST'])
@@ -181,7 +182,43 @@ def send_session_vars():
         username = session['username']
     else:
         username = ""
-    return json.dumps({"username":username})
+    if "role" in session:
+        role = session["role"]
+    else:
+        role = ""
+    return json.dumps({"username":username, "role":role})
+
+@app.route('/api/customerflights', methods = ['GET','POST'])
+def get_customer_flights():
+#    if "username" not in session:
+#        return json.dumps({"success":"false", "message": "You must be logged in"})
+    rec = request.json
+    username = "colton@nyu" #session['username']
+    date1 = "2017-01-03"#rec['date1']
+    date2 = "2018-06-01"#rec['date2']
+    cursor = conn.cursor()
+    query = 'SELECT sum(price) as sump, YEAR(purchase_date) as year, MONTH(purchase_date) as month FROM `purchases` natural join `ticket` natural join flight where customer_email = %s and purchase_date BETWEEN %s and %s GROUP BY YEAR(purchase_date), MONTH(purchase_date);'
+    args = (username, date1, date2)
+    try:
+        cursor.execute(query, args)
+    except Exception as e:
+        print(e)
+        print(cursor._last_executed)
+        return json.dumps({"success":"false", "message": "database query failed"})
+    global data
+    data = cursor.fetchall()
+    labels,vals = dates_to_array(date1, date2)
+    if data:
+        for d in data:
+            d['sump'] = float(d['sump'])
+            date = str(d['year']) + '-' + "%02d"%d['month']
+            print(date)
+            i = labels.index(date)
+            vals[i] = d['sump']
+            
+    return json.dumps({"success":"true", "message": "Query succeeded", "labels" :labels, "vals": vals},cls = DecimalEncoder)
+
+
 
 @app.route('/purchase/ticket', methods = ['GET', 'POST'])
 def buy_ticket():
@@ -215,6 +252,7 @@ def buy_ticket():
         return json.dumps({"success":"false", "message": "Please make purchase as either a booking agent or customer"})
     try:
         cursor.execute(query, args)
+        conn.commit()
     except Exception as e:
         print(e)
         print(cursor._last_executed)
@@ -222,13 +260,22 @@ def buy_ticket():
     
     return json.dumps({"success":"true", "message": "Ticket purchased!"})
 
+@app.route('/logout/auth', methods=['GET', 'POST'])
+def logout():
+    if "username" in session:
+        session.pop("username")
+    if "role" in session:
+        session.pop("role")
+    return json.dumps({"success":"true", "message": "You are logged out"})
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def catch_all(path):
     return render_template("index.html", username = "colton")
     #here's where you left off
+    
 
 if __name__ == "__main__":
     app.secret_key = "I gotta s3cret key that youll never know"
     app.run('127.0.0.1', 5000, use_debugger = True)
+    

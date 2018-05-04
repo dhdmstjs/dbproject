@@ -24,3 +24,15 @@ SELECT * FROM airline_staff WHERE username = %s
 SELECT * FROM booking_agent WHERE email = %s
 
 -- /Login and Registration --
+
+--------------------------------------------------------------------------------------------------------------------------------
+--View my flights
+SELECT airline_name, flight_num, purchase_date, departure_airport, departure_time, arrival_airport, status FROM purchases natural join ticket natural join flight WHERE departure_time > '2018-02-10';
+
+--Customer spending
+SELECT * FROM `purchases` natural join `ticket` natural join flight where customer_email = "colton@nyu";
+
+--Customer total amount spent range of dates:
+SELECT sum(price) FROM `purchases` natural join `ticket` natural join flight 
+where customer_email = "colton@nyu" and purchase_date BETWEEN "2017-05-1" and "2019-05-4" 
+GROUP BY YEAR(purchase_date), MONTH(purchase_date);

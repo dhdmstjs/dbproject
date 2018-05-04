@@ -75,10 +75,11 @@ export default {
       this.year = this.addMonths(new Date(),-12).toISOString().substring(0, 10)
     },
     getData() {
-      const path = `http://localhost:5000/api/##` //commission
+      const path = `http://localhost:5000/api/customerflights` //commission
       var d = {
-        "today": this.today,
-        "sixmonths": this.sixmonths,
+        "username" : "colton@nyu",
+        "date1": this.today,
+        "date2": this.sixmonths,
         "year": this.year,
       }
       axios.post(path,d)
@@ -96,10 +97,10 @@ export default {
     },
     submit () {
       if (this.$refs.form.validate()) {
-        const path = `http://localhost:5000/api/##` //commission
+        const path = `http://localhost:5000/api/customerflights` //commission
         var d = {
-          "start_date": this.date1,
-          "end_date": this.date2,
+          "date1": this.date1,
+          "date2": this.date2,
         }
         axios.post(path, d)
           .then(response => {
