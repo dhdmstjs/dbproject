@@ -75,7 +75,7 @@ export default {
       this.year = this.addMonths(new Date(),-12).toISOString().substring(0, 10)
     },
     getData() {
-      const path = `http://localhost:5000/api/customerflights` //commission
+      const path = `http://localhost:5000/api/customerspending` //commission
       var d = {
         "username" : "colton@nyu",
         "date1": this.today,
@@ -97,7 +97,7 @@ export default {
     },
     submit () {
       if (this.$refs.form.validate()) {
-        const path = `http://localhost:5000/api/customerflights` //commission
+        const path = `http://localhost:5000/api/customerspending` //commission
         var d = {
           "date1": this.date1,
           "date2": this.date2,

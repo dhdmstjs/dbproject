@@ -188,8 +188,8 @@ def send_session_vars():
         role = ""
     return json.dumps({"username":username, "role":role})
 
-@app.route('/api/customerflights', methods = ['GET','POST'])
-def get_customer_flights():
+@app.route('/api/customerspending', methods = ['GET','POST'])
+def get_customer_spending():
 #    if "username" not in session:
 #        return json.dumps({"success":"false", "message": "You must be logged in"})
     rec = request.json
