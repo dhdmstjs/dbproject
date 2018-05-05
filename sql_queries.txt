@@ -127,7 +127,7 @@ select * from customer natural join purchases natural join ticket natural join f
 where customer.email = purchases.customer_email and customer.email = "colton@nyu"
 
 --View Reports: total amount of tickets sold based on range of dates
-SELECT count(ticket.ticket_id) from flight natural join ticket natural join purchases
+SELECT count(ticket.ticket_id) as count_t from flight natural join ticket natural join purchases
 where airline_name = "China Eastern"
 and purchase_date BETWEEN "2018-01-05" and "2018-10-05"
 

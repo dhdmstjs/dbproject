@@ -30,23 +30,23 @@ conn = pymysql.connect(host='localhost',
 ###
 with app.app_context():
     cursor = conn.cursor()
-    month_query = 'select airport_city, count(ticket_id) as count_t from airport, flight natural join ticket natural join purchases where airport.airport_name = flight.arrival_airport and flight.departure_time BETWEEN DATE_SUB(%s, INTERVAL 3 MONTH) and %s group by airport_city order by count_t desc limit 3'
-    year_query = 'select airport_city, count(ticket_id) as count_t from airport, flight natural join ticket natural join purchases where airport.airport_name = flight.arrival_airport and flight.departure_time BETWEEN DATE_SUB(%s, INTERVAL 1 YEAR) and %s group by airport_city order by count_t desc limit 3'
-    date = today_date()
-    try:
-        cursor.execute(month_query, (date, date))
-        conn.commit()
-    except Exception as e:
-        print(e)
-    month_data = cursor.fetchall()
-    try:
-        cursor.execute(year_query, (date, date))
-        conn.commit()
-    except Exception as e:
-        print(e)
-    year_data = cursor.fetchall()
+    date1 = "2015-05-05"
+    date2 = "2019-05-06"
+    airline_name = get_airline_staff_airline_name()
+    query = 'SELECT count(ticket.ticket_id) as count_t, YEAR(purchase_date) as year, MONTH(purchase_date) as month from flight natural join ticket natural join purchases where airline_name = %s and purchase_date BETWEEN %s and %s'
+    args = (airline_name, date1, date2)
+    cursor.execute(query, args)
+    data = cursor.fetchall()
     
 ###
+labels,vals = dates_to_array(date1, date2)
+if data:
+    for d in data:
+        d['count_t'] = int(d['count_t'])
+        date = str(d['year']) + '-' + "%02d"%d['month']
+        print(date)
+        i = labels.index(date)
+        vals[i] = d['count_t']
 
 @app.route('/api/getflights', methods=['GET', 'POST'])
 def get_flights():
@@ -272,6 +272,7 @@ def get_booking_agent_commission():
     cursor = conn.cursor()
 #    if "username" not in session or "role" not in session:
 #        return json.dumps({"success":"false", "message": "You must be logged in for this operation"})
+    rec = request.json
     date1 = rec['date1']
     date2 = rec['date2']
     email = rec['username']#session['username']
@@ -304,6 +305,7 @@ def get_booking_agent_commission():
     
 @app.route('/api/bookingagenttopcustomers', methods = ['GET', 'POST'])
 def get_top_customers():
+    rec = request.json
     date1 = date2 = today_date()
     email = rec['username']#session['username']
     commission_query = 'SELECT .10*sum(price) as sump FROM `booking_agent` natural join purchases natural join ticket natural join flight where booking_agent.email = %s and purchase_date BETWEEN DATE_SUB(%s INTERVAL 1 YEAR) and %s group by customer_email ORDER BY `sump` DESC limit 5'
@@ -461,16 +463,70 @@ def get_top_destinations():
         conn.commit()
     except Exception as e:
         print(e)
-        return json.dumps({"success":"false", "message": "database insertion failed"})
+        return json.dumps({"success":"false", "message": "database query failed"})
     month_data = cursor.fetchall()
     try:
         cursor.execute(year_query, (date, date))
         conn.commit()
     except Exception as e:
         print(e)
-        return json.dumps({"success":"false", "message": "database insertion failed"})
+        return json.dumps({"success":"false", "message": "database query failed"})
     year_data = cursor.fetchall()
     return json.dumps({"success":"true", "message": "database query successful", "month_destinations": month_data, "year_destinations":year_data})
+
+@app.route('/api/comparerevenue')
+def compare_revenue():
+    airline = get_airline_staff_airline_name()
+    query = 'select sum(price) as sump from purchases natural join ticket natural join flight where airline_name = %s and purchases.booking_agent_id IS NULL'
+    try:
+        cursor.execute(query, (airline))
+        conn.commit()
+    except Exception as e:
+        print(e)
+        return json.dumps({"success":"false", "message": "database query failed"})
+    rev = cursor.fetchone()['sump']
+    if rev:
+        revenue_from_direct_sales = int(rev)
+    else:
+        revenue_from_direct_sales = 0
+    query = 'select sum(price)- .10*sum(price) as sump from purchases natural join ticket natural join flight where airline_name = %s and purchases.booking_agent_id IS NOT NULL'
+    try:
+        cursor.execute(query, (airline))
+        conn.commit()
+    except Exception as e:
+        print(e)
+    rev = cursor.fetchone()['sump']
+    if rev:
+        revenue_from_agents = int(cursor.fetchone()['sump'])
+    else:
+        revenue_from_agents = 0
+    return json.dump({"success":"true", "message": "database query succeeded", "direct_sales_revenue":revenue_from_direct_sales, "booking_agents_sales":revenue_from_agents})
+    
+#requires date1 and date2 from frontend
+@app.route('/api/viewreports')
+def view_reports():
+    rec = request.json
+    date1 = rec['date1']
+    date2 = rec['date2']
+    airline_name = get_airline_staff_airline_name()  
+    cursor = conn.cursor()
+    query = 'SELECT count(ticket.ticket_id) as count_t, YEAR(purchase_date) as year, MONTH(purchase_date) as month from flight natural join ticket natural join purchases where airline_name = %s and purchase_date BETWEEN %s and %s'
+    args = (airline_name, date1, date2)
+    try:
+        cursor.execute(query, args)
+    except Exception as e:
+        print(e)
+        return json.dumps({"success":"false", "message": "database query failed"})
+    data = cursor.fetchall()
+    labels,vals = dates_to_array(date1, date2)
+    if data:
+        for d in data:
+            d['count_t'] = int(d['count_t'])
+            date = str(d['year']) + '-' + "%02d"%d['month']
+            print(date)
+            i = labels.index(date)
+            vals[i] = d['count_t']
+    return json.dumps({"success":"false", "message": "database query failed", "labels":labels, "values":vals})
 
 @app.route('/logout/auth', methods=['GET', 'POST'])
 def logout():
