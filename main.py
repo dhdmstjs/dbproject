@@ -573,8 +573,11 @@ def view_reports():
             date = str(d['year']) + '-' + "%02d"%d['month']
             print(date)
             i = labels.index(date)
-            vals[i] = d['count_t']
-    return json.dumps({"success":"false", "message": "database query, viewreports", "labels":labels, "values":vals})
+            vals[i] = d['count_t']   
+    s = 0
+    for v in vals:
+        s+=v
+    return json.dumps({"success":"false", "message": "database query, viewreports", "labels":labels, "values":vals, "total":s})
 
 @app.route('/api/viewfrequentcustomers', methods = ['GET', 'POST'])
 def view_frequent_customers():
