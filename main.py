@@ -241,7 +241,7 @@ def get_customer_flights():
         return json.dumps({"success":"false", "message": "database query failed"})
     data = cursor.fetchall()
     print(data)
-    return json.dumps({"success":"true", "message": "query successful", "data" : data})
+    return json.dumps({"success":"true", "message": "query successful", "data" : data}, indent=4,sort_keys=True, default=str)
 
 @app.route('/api/bookingagentflights', methods = ['GET', 'POST'])
 def get_booking_agent_flights():
@@ -290,8 +290,11 @@ def get_customer_spending():
             print(date)
             i = labels.index(date)
             vals[i] = d['sump']
+    s = 0
+    for v in vals:
+        s+= v
 
-    return json.dumps({"success":"true", "message": "Query succeeded", "labels" :labels, "vals": vals},cls = DecimalEncoder)
+    return json.dumps({"success":"true", "message": "Query succeeded", "labels" :labels, "vals": vals, "total": s},cls = DecimalEncoder)
 
 #requires "date1" and "date2" (requires "username" only during testing stage)
 @app.route('/api/bookingagentcommission', methods = ['GET','POST'])
@@ -369,6 +372,8 @@ def get_top_customers():
     commission_data = cursor.fetchall()
     commission_ret = {"labels":[],"values":[]}
     ticket_ret = {"labels":[],"values":[]}
+    
+    
 
     for c in commission_data:
         commission_ret['labels'].append(c['customer_email'])
@@ -377,6 +382,7 @@ def get_top_customers():
     for t in ticket_data:
         ticket_ret['labels'].append(t['customer_email'])
         ticket_ret['values'].append(t['count_t'])
+        
 
     return json.dumps({"success":"true", "message":"database query succeeded, bookingagenttopcustomers", "ticket_customers":ticket_ret, "commission_customers":commission_ret})
 
