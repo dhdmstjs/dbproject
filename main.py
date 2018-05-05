@@ -19,7 +19,7 @@ app = CustomFlask(__name__, static_folder = "./dist/static", template_folder = "
 cors = CORS(app)
 
 #Configure MySQL
-conn = pymysql.connect(host='192.168.64.2',
+conn = pymysql.connect(host='localhost',
                        user='root',
                        password='',
                        db='airplanes',
@@ -447,11 +447,32 @@ def get_airline_staff_airline_name():
 
 @app.route('/api/airlinestaffflights', methods = ['GET', 'POST'])
 def get_airline_staff_flights():
+    global rec
+    rec = request.json
     cursor = conn.cursor()
     airline = get_airline_staff_airline_name()
-    query_flights = 'SELECT * FROM flight where airline_name = %s'
+    if not rec['departure_time']:
+        date1 = "1900-01-01"
+    else:
+        date1 = rec['departure_time']
+    if not rec['arrival_time']:
+        date2 = "3000-01-01"
+    else:
+        date2 = rec['arrival_time']
+    if rec['arrival_airport'] and rec['departure_airport']:
+        query_flights = 'SELECT * FROM flight where airline_name = %s and departure_time between %s and %s and departure_airport = %s and arrival_airport = %s'
+        args = (airline, date1, date2+' 23:59:59', rec['departure_airport'], rec['arrival_airport'])
+    elif rec['arrival_airport'] and rec['departure_airport']:
+        query_flights = 'SELECT * FROM flight where airline_name = %s and departure_time between %s and %s and arrival_airport = %s'
+        args = (airline, date1, date2+' 23:59:59', rec['arrival_airport'])
+    elif rec['arrival_airport'] and rec['departure_airport']:
+        query_flights = 'SELECT * FROM flight where airline_name = %s and departure_time between %s and %s and departure_airport = %s'
+        args = (airline, date1, date2+' 23:59:59', rec['departure_airport'])
+    else:
+        query_flights = 'SELECT * FROM flight where airline_name = %s and departure_time between %s and %s'
+        args = (airline, date1, date2+' 23:59:59')
     try:
-        cursor.execute(query_flights, (airline))
+        cursor.execute(query_flights, (args))
         conn.commit()
     except Exception as e:
         print(e)
@@ -470,7 +491,7 @@ def get_airline_staff_flights():
             return json.dumps({"success":"false", "message": "database insertion failed"})
         custs = cursor.fetchall()
         d.update( {"customers":custs})
-    return json.dumps({"success":"false", "message": "succss, airline staff flights", "flights": data}, indent=4,sort_keys=True, default=str)
+    return json.dumps({"success":"true", "message": "succss, airline staff flights", "flights": data}, indent=4,sort_keys=True, default=str)
 
 @app.route('/api/airlinestaffbookingagents', methods = ['GET', 'POST'])
 def get_airline_staff_booking_agents():
