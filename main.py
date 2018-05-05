@@ -384,7 +384,7 @@ def get_top_customers():
         ticket_ret['values'].append(t['count_t'])
         
 
-    return json.dumps({"success":"true", "message":"database query succeeded, bookingagenttopcustomers", "ticket_customers":ticket_ret, "commission_customers":commission_ret})
+    return json.dumps({"success":"true", "message":"database query succeeded, bookingagenttopcustomers", "ticket_customers":ticket_ret, "commission_customers":commission_ret, "commission_data":commission_data, "ticket_data":ticket_data})
 
 #requires "flight_num"
 #requires "customer_username" if role is booking_agent
