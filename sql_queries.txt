@@ -1,5 +1,7 @@
 --The following is a list of sql queries used in the project. These are shown with the arguments that are fed into the
 --the query dynamically, which are named to be self explanatory. "rec" indicates that it was received from the front end. 
+--Some of the queries are shown given the explicit values (of the dates, or email addresses, etc) to make the meaning of the query more clear.
+-- Of course, in the project itself, these values are variable and not hard coded. Enjoy.
 
 
 -- Querying Flights --
@@ -35,3 +37,101 @@ SELECT airline_name, flight_num, purchase_date, departure_airport, departure_tim
 SELECT sum(price) FROM `purchases` natural join `ticket` natural join flight 
 where customer_email = "colton@nyu" and purchase_date BETWEEN "2017-05-1" and "2019-05-4" 
 GROUP BY YEAR(purchase_date), MONTH(purchase_date);
+
+--Booking Agent-----------------
+-- Total over period of time
+SELECT .10*sum(price) as sump FROM `booking_agent` natural join purchases natural join ticket natural join flight 
+where purchase_date BETWEEN "2017-04-03" and "2019-04-04" and booking_agent.booking_agent_id = %s
+
+--Average ticket price
+SELECT .10*sum(price)/count(ticket_id) as avg_ticket_price FROM `booking_agent` natural join purchases natural join ticket natural join flight where purchase_date BETWEEN "2017-04-03" and "2019-04-04"
+
+--Total Number of Tickets sold
+SELECT count(ticket_id) as total_sold FROM `booking_agent` natural join purchases natural join ticket natural join flight where purchase_date BETWEEN "2017-04-03" and "2019-04-04"
+
+--Booking Agent Top 5 customers from Number of tickets sold
+
+
+--Booking Agent Top 5 customers from commission
+SELECT .10*sum(price) as sump FROM `booking_agent` natural join purchases natural join ticket natural join flight 
+where booking_agent.email = %s and purchase_date BETWEEN DATE_SUB(%s INTERVAL 1 YEAR) and %s 
+group by customer_email 
+ORDER BY `sump` DESC 
+limit 5
+
+--Booking Agent Top 5 customers from number of tickets sold
+--We do this as part of a separate query so that we can order by a different value and use the limit key word to only return 5
+SELECT customer_email, count(ticket_id) as count_t
+FROM `booking_agent` natural join purchases natural join ticket natural join flight 
+where booking_agent.email = %s and purchase_date BETWEEN DATE_SUB("2018-05-05", INTERVAL 6 MONTH) and "2018-05-05" 
+group by customer_email 
+ORDER BY count(ticket_id) DESC 
+limit 5
+
+
+--/Booking Agent-----------------
+
+--Airline Staff-------------------------------
+--Airline staff get airline:
+select airline_name from airline_staff where airline_staff.username = "dirty_dan@gmail.com"
+
+--Airline Staff Get flights:
+SELECT * FROM flight where airline_name = "American Airlines"
+
+--Get Customer list from flight name:
+SELECT customer_email, name, date_of_birth from flight natural join ticket natural join purchases natural join customer 
+where flight_num = "98765" and purchases.customer_email = customer.email
+
+
+--Get top Booking agents based on commission:
+SELECT booking_agent.email, sum(flight.price) * .10 as commission
+FROM purchases natural join ticket natural join flight, booking_agent
+where purchases.booking_agent_id = booking_agent.booking_agent_id
+and purchase_date
+group by booking_agent.booking_agent_id
+limit 5
+
+--Get top booking agents based on 
+
+
+--Get Frequent customers
+SELECT customer.email, count(ticket.ticket_id) from flight natural join ticket natural join purchases natural join customer 
+where airline_name = "China Eastern" and purchases.customer_email = customer.email 
+and purchase_date BETWEEN DATE_SUB("2018-05-05", INTERVAL 1 YEAR) and "2018-05-05"
+group by customer.email 
+order by count(ticket.ticket_id) DESC
+limit 10
+
+--Get flights for a customer
+select * from customer natural join purchases natural join ticket natural join flight 
+where customer.email = purchases.customer_email and customer.email = "colton@nyu"
+
+--View Reports: total amount of tickets sold based on range of dates
+SELECT count(ticket.ticket_id) from flight natural join ticket natural join purchases
+where airline_name = "China Eastern"
+and purchase_date BETWEEN "2018-01-05" and "2018-10-05"
+
+--Comparison of Revenue earned:
+--Revenue from direct sales
+select sum(price) as sump from purchases natural join ticket natural join flight 
+where airline_name = "China Eastern" and purchases.booking_agent_id IS NULL
+
+--Revenue from Booking agent booked sales:
+--Here, revenue takes into consideration the commission that must be paid to the booking agents from the price.
+select sum(price)- .10*sum(price) as sump from purchases natural join ticket natural join flight 
+where airline_name = "China Eastern" and purchases.booking_agent_id IS NOT NULL
+
+--Most popular destinations for last 3 months:
+select airport_city, count(ticket_id) as count_t from airport, flight natural join ticket natural join purchases
+where airport.airport_name = flight.arrival_airport
+and flight.departure_time BETWEEN DATE_SUB("2018-05-05", INTERVAL 3 MONTH) and "2018-05-05"
+group by airport_city
+
+-- Most popular destinations for the last year:
+select airport_city, count(ticket_id) as count_t from airport, flight natural join ticket natural join purchases
+where airport.airport_name = flight.arrival_airport
+and flight.departure_time BETWEEN DATE_SUB("2018-05-05", INTERVAL 1 YEAR) and "2018-05-05"
+group by airport_city
+
+--/Airline Staff-------------------------------
+
