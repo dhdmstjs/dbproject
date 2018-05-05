@@ -29,27 +29,24 @@ conn = pymysql.connect(host='localhost',
 
 ###
 with app.app_context():
-    cursor  = conn.cursor()
-    airline = get_airline_staff_airline_name()
-    query_flights = 'SELECT * FROM flight where airline_name = %s'
+    cursor = conn.cursor()
+    month_query = 'select airport_city, count(ticket_id) as count_t from airport, flight natural join ticket natural join purchases where airport.airport_name = flight.arrival_airport and flight.departure_time BETWEEN DATE_SUB(%s, INTERVAL 3 MONTH) and %s group by airport_city order by count_t desc limit 3'
+    year_query = 'select airport_city, count(ticket_id) as count_t from airport, flight natural join ticket natural join purchases where airport.airport_name = flight.arrival_airport and flight.departure_time BETWEEN DATE_SUB(%s, INTERVAL 1 YEAR) and %s group by airport_city order by count_t desc limit 3'
+    date = today_date()
     try:
-        cursor.execute(query_flights, (airline))
+        cursor.execute(month_query, (date, date))
         conn.commit()
     except Exception as e:
         print(e)
-        print(cursor._last_executed)
-    data = cursor.fetchall()
-    for d in data:
-        flight_number = d['flight_num']
-        query_customers = 'SELECT customer_email, name, date_of_birth from flight natural join ticket natural join purchases natural join customer where flight_num = %s and purchases.customer_email = customer.email'
-        try:
-            cursor.execute(query_customers, (flight_number))
-            conn.commit()
-        except Exception as e:
-            print(e)
-            print(cursor._last_executed)
-        custs = cursor.fetchall()
-        d.update( {"customers":custs})
+    month_data = cursor.fetchall()
+    try:
+        cursor.execute(year_query, (date, date))
+        conn.commit()
+    except Exception as e:
+        print(e)
+    year_data = cursor.fetchall()
+    
+###
 
 @app.route('/api/getflights', methods=['GET', 'POST'])
 def get_flights():
@@ -453,7 +450,27 @@ def get_airline_staff_booking_agents():
     ticket_year_data = cursor.fetchall()
     return json.dumps({"success":"true", "message": "database query successfull", "commission_year_data":com_year_data, "ticket_year_data" : ticket_year_data, "ticket_month_data" : ticket_month_data})
 
-
+@app.route('/api/bookingagenttopdestinations', methods=['GET', 'POST'])
+def get_top_destinations():
+    cursor = conn.cursor()
+    month_query = 'select airport_city, count(ticket_id) as count_t from airport, flight natural join ticket natural join purchases where airport.airport_name = flight.arrival_airport and flight.departure_time BETWEEN DATE_SUB(%s, INTERVAL 3 MONTH) and %s group by airport_city order by count_t desc limit 3'
+    year_query = 'select airport_city, count(ticket_id) as count_t from airport, flight natural join ticket natural join purchases where airport.airport_name = flight.arrival_airport and flight.departure_time BETWEEN DATE_SUB(%s, INTERVAL 1 YEAR) and %s group by airport_city order by count_t desc limit 3'
+    date = today_date()
+    try:
+        cursor.execute(month_query, (date, date))
+        conn.commit()
+    except Exception as e:
+        print(e)
+        return json.dumps({"success":"false", "message": "database insertion failed"})
+    month_data = cursor.fetchall()
+    try:
+        cursor.execute(year_query, (date, date))
+        conn.commit()
+    except Exception as e:
+        print(e)
+        return json.dumps({"success":"false", "message": "database insertion failed"})
+    year_data = cursor.fetchall()
+    return json.dumps({"success":"true", "message": "database query successful", "month_destinations": month_data, "year_destinations":year_data})
 
 @app.route('/logout/auth', methods=['GET', 'POST'])
 def logout():
