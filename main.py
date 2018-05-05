@@ -230,7 +230,7 @@ def get_customer_flights():
 #        return json.dumps({"success":"false", "message": "You must be logged in"})
     rec = request.json
     username = rec['username']#session['username']
-    query = 'SELECT airline_name, flight_num, purchase_date, departure_airport, departure_time, arrival_airport, status FROM purchases natural join ticket natural join flight WHERE departure_time > %s and customer_email = %s;'
+    query = 'SELECT airline_name, flight_num, purchase_date, departure_airport, departure_time, arrival_airport, arrival_time, status FROM purchases natural join ticket natural join flight WHERE departure_time > %s and customer_email = %s;'
     args = (today_date(), username)
     cursor = conn.cursor()
     try:
@@ -249,7 +249,7 @@ def get_booking_agent_flights():
 #        return json.dumps({"success":"false", "message": "You must be logged in"})
     rec = request.json
     username = rec['username']#session['username']
-    query = 'SELECT airline_name, flight_num, purchase_date, departure_airport, departure_time, arrival_airport, status FROM purchases natural join ticket natural join flight WHERE departure_time > %s and booking_agent_id = %s;'
+    query = 'SELECT airline_name, flight_num, purchase_date, customer_email, arrival_time, departure_airport, departure_time, arrival_airport, status FROM purchases natural join ticket natural join flight natural join booking_agent WHERE departure_time > %s and booking_agent.email = %s;'
     args = (today_date(), username)
     cursor = conn.cursor()
     try:
@@ -260,7 +260,8 @@ def get_booking_agent_flights():
         return json.dumps({"success":"false", "message": "database query failed"})
     data = cursor.fetchall()
     print(data)
-    return json.dumps({"success":"true", "message": "query successful", "data" : data})
+    print(cursor._last_executed)
+    return json.dumps({"success":"true", "message": "query successful", "data" : data}, indent=4,sort_keys=True, default=str)
 
 #requires "date1" and date2" (requires "username" only in the testing stage)
 @app.route('/api/customerspending', methods = ['GET','POST'])
@@ -384,7 +385,7 @@ def get_top_customers():
         ticket_ret['values'].append(t['count_t'])
         
 
-    return json.dumps({"success":"true", "message":"database query succeeded, bookingagenttopcustomers", "ticket_customers":ticket_ret, "commission_customers":commission_ret, "commission_data":commission_data, "ticket_data":ticket_data})
+    return json.dumps({"success":"true", "message":"database query succeeded, bookingagenttopcustomers", "ticket_customers":ticket_ret, "commission_customers":commission_ret, "commission_data":commission_data, "ticket_data":ticket_data}, indent=4,sort_keys=True, default=str)
 
 #requires "flight_num"
 #requires "customer_username" if role is booking_agent
@@ -469,7 +470,7 @@ def get_airline_staff_flights():
             return json.dumps({"success":"false", "message": "database insertion failed"})
         custs = cursor.fetchall()
         d.update( {"customers":custs})
-    return json.dumps({"success":"false", "message": "database insertion failed", "flights": data}, indent=4,sort_keys=True, default=str)
+    return json.dumps({"success":"false", "message": "succss, airline staff flights", "flights": data}, indent=4,sort_keys=True, default=str)
 
 @app.route('/api/airlinestaffbookingagents', methods = ['GET', 'POST'])
 def get_airline_staff_booking_agents():
