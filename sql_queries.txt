@@ -87,11 +87,31 @@ where flight_num = "98765" and purchases.customer_email = customer.email
 SELECT booking_agent.email, sum(flight.price) * .10 as commission
 FROM purchases natural join ticket natural join flight, booking_agent
 where purchases.booking_agent_id = booking_agent.booking_agent_id
-and purchase_date
+and flight.airline_name = "China Eastern"
+and purchase_date between DATE_SUB("2018-05-05", INTERVAL 1 YEAR) and "2018-05-05"
 group by booking_agent.booking_agent_id
+order by sum(flight.price) desc
 limit 5
 
---Get top booking agents based on 
+--Get top booking agents based on tickets past year
+SELECT booking_agent.email, count(ticket_id) as tickets
+FROM purchases natural join ticket natural join flight, booking_agent
+where purchases.booking_agent_id = booking_agent.booking_agent_id
+and flight.airline_name = "China Eastern"
+and purchase_date between DATE_SUB("2018-05-05", INTERVAL 1 YEAR) and "2018-05-05"
+group by booking_agent.booking_agent_id
+order by count(ticket_id) desc
+limit 5
+
+--Get top booking agents based on tickets past month
+SELECT booking_agent.email, count(ticket_id) as tickets
+FROM purchases natural join ticket natural join flight, booking_agent
+where purchases.booking_agent_id = booking_agent.booking_agent_id
+and flight.airline_name = "China Eastern"
+and purchase_date between DATE_SUB("2018-05-05", INTERVAL 1 MONTH) and "2018-05-05"
+group by booking_agent.booking_agent_id
+order by count(ticket_id) desc
+limit 5
 
 
 --Get Frequent customers

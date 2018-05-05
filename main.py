@@ -29,37 +29,27 @@ conn = pymysql.connect(host='localhost',
 
 ###
 with app.app_context():
-    global data
-    cursor = conn.cursor()
-    date1 = date2 = today_date()
-    email = "c"#rec['username']#session['username']
-    commission_query = 'SELECT .10*sum(price) as sump, customer_email FROM `booking_agent` natural join purchases natural join ticket natural join flight where booking_agent.email = %s and purchase_date BETWEEN DATE_SUB(%s, INTERVAL 1 YEAR) and %s group by customer_email ORDER BY `sump` DESC limit 5'
-    ticket_query = 'SELECT customer_email, count(ticket_id) as count_t FROM `booking_agent` natural join purchases natural join ticket natural join flight where booking_agent.email = %s and purchase_date BETWEEN DATE_SUB(%s, INTERVAL 6 MONTH) and %s group by customer_email ORDER BY count(ticket_id) DESC limit 5'
-    args = (email, date1, date2)
+    cursor  = conn.cursor()
+    airline = get_airline_staff_airline_name()
+    query_flights = 'SELECT * FROM flight where airline_name = %s'
     try:
-        cursor.execute(ticket_query, args)
-    except Exception as e:
-        print(e)
-        print(cursor._last_executed)  
-    ticket_data = cursor.fetchall()
-    try:
-        cursor.execute(commission_query, args)
+        cursor.execute(query_flights, (airline))
+        conn.commit()
     except Exception as e:
         print(e)
         print(cursor._last_executed)
-    commission_data = cursor.fetchall()
-    
-commission_ret = {"labels":[],"values":[]}
-ticket_ret = {"labels":[],"values":[]}
-
-for c in commission_data:
-    commission_ret['labels'].append(c['customer_email'])
-    commission_ret['values'].append(int(c['sump']))
-    
-for t in ticket_data:
-    ticket_ret['labels'].append(t['customer_email'])
-    ticket_ret['values'].append(t['count_t'])
-#### 
+    data = cursor.fetchall()
+    for d in data:
+        flight_number = d['flight_num']
+        query_customers = 'SELECT customer_email, name, date_of_birth from flight natural join ticket natural join purchases natural join customer where flight_num = %s and purchases.customer_email = customer.email'
+        try:
+            cursor.execute(query_customers, (flight_number))
+            conn.commit()
+        except Exception as e:
+            print(e)
+            print(cursor._last_executed)
+        custs = cursor.fetchall()
+        d.update( {"customers":custs})
 
 @app.route('/api/getflights', methods=['GET', 'POST'])
 def get_flights():
@@ -233,7 +223,7 @@ def get_booking_agent_flights():
 #    if "username" not in session:
 #        return json.dumps({"success":"false", "message": "You must be logged in"})
     rec = request.json
-    username = "c"#rec['username']#session['username']
+    username = rec['username']#session['username']
     query = 'SELECT airline_name, flight_num, purchase_date, departure_airport, departure_time, arrival_airport, status FROM purchases natural join ticket natural join flight WHERE departure_time > %s and booking_agent_id = %s;'
     args = (today_date(), username)
     cursor = conn.cursor()
@@ -335,8 +325,7 @@ def get_top_customers():
         print(e)
         print(cursor._last_executed)
         return json.dumps({"success":"false", "message": "database query failed"})  
-    commission_data = cursor.fetchall()
-    
+    commission_data = cursor.fetchall() 
     commission_ret = {"labels":[],"values":[]}
     ticket_ret = {"labels":[],"values":[]}
     
@@ -389,6 +378,82 @@ def buy_ticket():
         return json.dumps({"success":"false", "message": "database insertion failed"})
     
     return json.dumps({"success":"true", "message": "Ticket purchased!"})
+
+def get_airline_staff_airline_name():
+#        if 'username' not in session:
+#           return ''
+    username = 'dirty_dan@gmail.com'#username = session['username']
+    query = 'select airline_name from airline_staff where airline_staff.username = %s'
+    try:
+        cursor.execute(query, (username))
+        conn.commit()
+    except Exception as e:
+        print(e)
+        print(cursor._last_executed)
+        return json.dumps({"success":"false", "message": "database insertion failed"})
+    airline = cursor.fetchone()['airline_name']
+    return airline
+
+@app.route('/api/airlinestaffflights', methods = ['GET', 'POST'])
+def get_airline_staff_flights():
+    airline = get_airline_staff_airline_name()
+    query_flights = 'SELECT * FROM flight where airline_name = %s'
+    try:
+        cursor.execute(query_flights, (airline))
+        conn.commit()
+    except Exception as e:
+        print(e)
+        print(cursor._last_executed)
+        return json.dumps({"success":"false", "message": "database insertion failed"})
+    data = cursor.fetchall()
+    for d in data:
+        flight_number = d['flight_num']
+        query_customers = 'SELECT customer_email, name, date_of_birth from flight natural join ticket natural join purchases natural join customer where flight_num = %s and purchases.customer_email = customer.email'
+        try:
+            cursor.execute(query_customers, (flight_number))
+            conn.commit()
+        except Exception as e:
+            print(e)
+            print(cursor._last_executed)
+            return json.dumps({"success":"false", "message": "database insertion failed"})
+        custs = cursor.fetchall()
+        d.update( {"customers":custs})
+    return json.dumps({"success":"false", "message": "database insertion failed", "flights": data})
+
+@app.route('/api/airlinestaffbookingagents', methods = ['GET', 'POST'])
+def get_airline_staff_booking_agents():
+    airline = get_airline_staff_airline_name()
+    args = (airline, today_date(), today_date())
+    commission_year_query = 'SELECT booking_agent.email, sum(flight.price) * .10 as commission FROM purchases natural join ticket natural join flight, booking_agent where purchases.booking_agent_id = booking_agent.booking_agent_id and flight.airline_name =%s and purchase_date between DATE_SUB(%s, INTERVAL 1 YEAR) and %s group by booking_agent.booking_agent_id order by sum(flight.price) desc limit 5'
+    ticket_month_query = 'SELECT booking_agent.email, count(ticket_id) as tickets FROM purchases natural join ticket natural join flight, booking_agent where purchases.booking_agent_id = booking_agent.booking_agent_id and flight.airline_name = %s and purchase_date between DATE_SUB(%s, INTERVAL 1 MONTH) and %s group by booking_agent.booking_agent_id order by count(ticket_id) desc limit 5'
+    ticket_year_query = 'SELECT booking_agent.email, count(ticket_id) as tickets FROM purchases natural join ticket natural join flight, booking_agent where purchases.booking_agent_id = booking_agent.booking_agent_id and flight.airline_name = %s and purchase_date between DATE_SUB(%s, INTERVAL 1 YEAR) and %s group by booking_agent.booking_agent_id order by count(ticket_id) desc limit 5'
+    try:
+        cursor.execute(commission_year_query, args)
+        conn.commit()
+    except Exception as e:
+        print(e)
+        print(cursor._last_executed)
+    com_year_data = cursor.fetchall()
+    if com_year_data:
+        com_year_data[0]['commission'] = float(com_year_data[0]['commission'])
+    try:
+        cursor.execute(ticket_month_query, args)
+        conn.commit()
+    except Exception as e:
+        print(e)
+        print(cursor._last_executed)
+    ticket_month_data = cursor.fetchall()
+    try:
+        cursor.execute(ticket_year_query, args)
+        conn.commit()
+    except Exception as e:
+        print(e)
+        print(cursor._last_executed)
+        return json.dumps({"success":"false", "message": "database insertion failed"})
+    ticket_year_data = cursor.fetchall()
+    return json.dumps({"success":"true", "message": "database query successfull", "commission_year_data":com_year_data, "ticket_year_data" : ticket_year_data, "ticket_month_data" : ticket_month_data})
+
+
 
 @app.route('/logout/auth', methods=['GET', 'POST'])
 def logout():
