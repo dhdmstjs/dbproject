@@ -3,6 +3,7 @@ import App from './App'
 import router from './router'
 import Vuetify from 'vuetify'
 import VueSweetalert2 from 'vue-sweetalert2'
+import VueCharts from 'vue-chartjs'
 import 'vuetify/dist/vuetify.min.css'
 
 Vue.config.productionTip = false

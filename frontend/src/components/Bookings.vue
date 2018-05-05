@@ -3,7 +3,7 @@ airport<template>
     <v-app>
     <v-layout row wrap justify-center>
       <v-flex xs12 >
-        <h1>Upcoming Flights</h1><br>
+        <h1>Upcoming Flights next 30 days</h1><br>
 
         <div v-if="this.$login=='customer'">
           <v-data-table
@@ -14,12 +14,13 @@ airport<template>
               <template slot="items" slot-scope="props">
                 <td class="text-xs-right">{{ props.item.airline_name }}</td>
                 <td class="text-xs-right">{{ props.item.flight_num }}</td>
-                <td class="text-xs-right">{{ props.item.departure_city }}</td>
                 <td class="text-xs-right">{{ props.item.departure_airport }}</td>
-                <td class="text-xs-right">{{ props.item.arrival_city }}</td>
+                <td class="text-xs-right">{{ props.item.departure_time }}</td>
+
                 <td class="text-xs-right">{{ props.item.arrival_airport }}</td>
-                <td class="text-xs-right">{{ props.item.datesResult }}</td>
-                <td class="text-xs-right">{{ props.item.price }}</td>
+                <td class="text-xs-right">{{ props.item.arrival_time }}</td>
+
+                <td class="text-xs-right">{{ props.item.purchase_date }}</td>
                 <td class="text-xs-right">{{ props.item.status }}</td>
               </template>
 
@@ -36,13 +37,11 @@ airport<template>
                 <td class="text-xs-right">{{ props.item.customer_email }}</td>
                 <td class="text-xs-right">{{ props.item.airline_name }}</td>
                 <td class="text-xs-right">{{ props.item.flight_num }}</td>
-                <td class="text-xs-right">{{ props.item.departure_city }}</td>
                 <td class="text-xs-right">{{ props.item.departure_airport }}</td>
                 <td class="text-xs-right">{{ props.item.departure_time }}</td>
-                <td class="text-xs-right">{{ props.item.arrival_city }}</td>
                 <td class="text-xs-right">{{ props.item.arrival_airport }}</td>
                 <td class="text-xs-right">{{ props.item.arrival_time }}</td>
-                <td class="text-xs-right">{{ props.item.price }}</td>
+                <td class="text-xs-right">{{ props.item.purchase_date }}</td>
                 <td class="text-xs-right">{{ props.item.status }}</td>
               </template>
 
@@ -57,25 +56,27 @@ airport<template>
             hide-actions
             class="elevation-1">
               <template slot="items" slot-scope="props">
+                <td class="text-xs-right">{{ props.item.airline_name }}</td>
+
                 <td class="text-xs-right">{{ props.item.flight_num }}</td>
                 <td class="text-xs-right">{{ props.item.departure_airport }}</td>
                 <td class="text-xs-right">{{ props.item.departure_time }}</td>
 
                 <td class="text-xs-right">{{ props.item.arrival_airport }}</td>
                 <td class="text-xs-right">{{ props.item.arrival_time }}</td>
+                <td class="text-xs-right">{{ props.item.price }}</td>
+
                 <td class="text-xs-right">{{ props.item.status }}</td>
               </template>
-            <!-- <template slot="no-data">
-              <v-btn color="primary" @click="initialize">Reset</v-btn>
-            </template> -->
+
           </v-data-table>
           <br><br><br>
 
           <v-card>
-            <v-layout row wrap justify-center>
-              <v-flex xs7>
                 <br>
                 <h2> Search for all flights </h2>
+              <v-layout row wrap justify-center>
+                <v-flex xs7>
                 <v-form v-model="valid" ref="form" lazy-validation>
                     <v-text-field
                     label="Depart From" v-model="departure" required></v-text-field>
@@ -104,7 +105,10 @@ airport<template>
                   <v-btn @click="clear">clear</v-btn>
                   <br><br>
                 </v-form>
-
+              </v-flex>
+            </v-layout>
+            <v-layout row wrap justify-center>
+              <v-flex xs9>
                 <div v-if="showFlights">
                   <v-data-table
                     :headers="headers_results"
@@ -157,7 +161,7 @@ export default {
       items_customer: [],
       items_booking: [],
       items_airline: [],
-      items: [], //for airline staff search data
+      items_results: [], //for airline staff search data
       menu1: false,
       menu2: false,
       date1: null, //start date
@@ -168,38 +172,34 @@ export default {
       headers_customer: [
         { text: 'Airline', value: 'airline_name' },
         { text: 'Flight Number', value: 'flight_num' },
-        { text: 'Departure City', value: 'departure_city' },
         { text: 'Departure Airport', value: 'departure_airport' },
         { text: 'Departure Time', value: 'departure_time' },
-
-        { text: 'Arrival City', value: 'arrival_city' },
         { text: 'Arrival Airport', value: 'arrival_airport' },
         { text: 'Arrival Time', value: 'arrival_time' },
-
-        { text: 'Price', value: 'price' },
+        { text: 'Purchase Date', value: 'purchase_date' },
         { text: 'Status', value: 'status' },
       ],
       headers_booking: [
         { text: 'Customer', value: 'customer_email' },
         { text: 'Airline', value: 'airline_name' },
         { text: 'Flight Number', value: 'flight_num' },
-        { text: 'Departure City', value: 'departure_city' },
         { text: 'Departure Airport', value: 'departure_airport' },
         { text: 'Departure Time', value: 'departure_time' },
-
-        { text: 'Arrival City', value: 'arrival_city' },
         { text: 'Arrival Airport', value: 'arrival_airport' },
         { text: 'Arrival Time', value: 'arrival_time' },
 
-        { text: 'Price', value: 'price' },
+        { text: 'Purchase Date', value: 'purchase_date' },
         { text: 'Status', value: 'status' },
       ],
       headers_airline: [
+        { text: 'Airline', value: 'airline_name' },
           { text: 'Flight Number', value: 'flight_num' },
           { text: 'Departure Airport', value: 'departure_airport' },
           { text: 'Departure Time', value: 'departure_time' },
           { text: 'Arrival Airport', value: 'arrival_airport' },
           { text: 'Arrival Time', value: 'arrival_time' },
+          { text: 'Price', value: 'price' },
+
           { text: 'Status', value: 'status' },
         ],
       headers_results: [
@@ -210,7 +210,8 @@ export default {
           { text: 'Arrival Time', value: 'arrival_time' },
           { text: 'Status', value: 'status' },
         ],
-
+        today: null,
+        onemonth: null,
     }
   },
   created () {
@@ -221,48 +222,84 @@ export default {
     console.log("this", this.$login);
     //call from db type of login
     //this.$login = ''
-    // this.callData() //calls data for bookings
+    this.callData() //calls data for bookings
   },
   methods: {
+    addMonths(date, months) {
+      date.setMonth(date.getMonth() + months);
+      return date;
+    },
+    getDate() {
+      this.today = new Date()
+      this.today = this.today.toISOString().substring(0, 10); //yyyy-mm-dd
+      this.onemonth = this.addMonths(new Date(),-1).toISOString().substring(0, 10)
+    },
     callData(){
-      const path = `http://localhost:5000/api/####`
-      var d = {
-        "login_type": this.$login,
-        "page_type": "bookings"
+      if (this.$login == 'customer') {
+        const path = `http://localhost:5000/api/customerflights`
+        var d = {
+          "username": 'colton@nyu'
+        }
+        axios.post(path, d)
+          .then(response => {
+            var res = response.data.data //give me login_usertype,
+            console.log("res cust", res);
+            this.items_customer = res
+          })
+          .catch(error => {
+            console.log("error =>", error);
+          })
       }
-      axios.post(path, d)
-        .then(response => {
-          var res = response.data //give me login_usertype,
-          console.log(res);
-          if (res.login_usertype == 'customer') {
-            //this.items_customer = res.dataitems
-          }
-          if (res.login_usertype == 'booking_agent') {
-            //this.items_booking = res.dataitems
-          }
-          if (res.login_usertype == 'airline_staff') {
-            //this.items_airline = res.dataitems
-          }
-        })
-        .catch(error => {
-          console.log("error changing status");
-        })
+      if (this.$login == 'booking_agent') {
+        const path = `http://localhost:5000/api/bookingagentflights`
+        var d = {
+          "username": 'c'
+        }
+        axios.post(path, d)
+          .then(response => {
+            var res = response.data //give me login_usertype,
+            console.log("res booking", res);
+            this.items_booking = res.data
+          })
+          .catch(error => {
+            console.log("error =>", error);
+          })
+      }
+
+      if (this.$login == 'airline_staff') {
+        const path = `http://localhost:5000/api/airlinestaffflights`
+        var d = {
+          "username": "dirty_dan@gmail.com",
+          "date1": this.onemonth,
+          "date2": this.today
+        }
+        axios.post(path, d)
+          .then(response => {
+            var res = response.data //give me login_usertype,
+            console.log("res, airline", res.flights);
+            this.items_airline = res.flights
+          })
+          .catch(error => {
+            console.log("error =>", error);
+          })
+      }
     },
     submit (){
       if (this.$refs.form.validate()) { //search flights for staff
         this.showFlights = true
-        const path = `http://localhost:5000/api/getflights`
+        const path = `http://localhost:5000/api/airlinestaffflights`
         var d = {
-          "departure": this.departure,
-          "arrival": this.arrival,
+          "username": "dirty_dan@gmail.com",
+          "departure_airport": this.departure,
+          "arrival_airport": this.arrival,
           "departure_time": this.date1,
           "arrival_time": this.date2
         }
         axios.post(path, d)
           .then(response => {
             var res = response.data //return flights
-            console.log(res);
-            //this.items = res.dataitems
+            console.log("search flight", res);
+            //this.items = res
           })
           .catch(error => {
             console.log("error getting flights");

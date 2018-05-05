@@ -3,62 +3,72 @@
     <v-app> <br><br>
       <div v-if="this.$login=='booking_agent'">
 
-          <h2>Commission Data</h2> <v-btn flat color="primary" @click="dateChange">Change date range</v-btn>
+          <h2>Commission Data Default: Past 30 days</h2> <v-btn flat color="primary" @click="dateChange">Change date range</v-btn>
 
-                <!-- Data Table -->
             <v-layout row wrap justify-center>
               <v-flex xs8 >
-                <v-data-table :headers="headers_commission" :items="items_commission" hide-actions class="elevation-1">
-                  <template slot="items" slot-scope="props">
-                    <!-- <td class="text-xs-right">{{ props.item.departure_city }}</td> -->
-                    <td class="text-xs-center">{{ props.item.totalamount }}</td>
-                    <td class="text-xs-center">{{ props.item.average }}</td>
-                    <td class="text-xs-center">{{ props.item.totalnumber }}</td>
-                  </template>
-                </v-data-table>
+                  <h2>Total Amount</h2>
+                    <span class="text-xs-center">{{ this.items_commission_total_cost }}</span>
+                  <h2> Avg per Ticket </h2>
+                    <span class="text-xs-center">{{ this.items_commission_avg_ticket_price }}</span>
+                  <h2> Total Tickets Sold</h2>
+                    <span class="text-xs-center">{{ this.items_commission_total_sold }}</span>
               </v-flex>
             </v-layout>
             <br><br><br>
         <!-- these dates are to choose date-->
           <div v-if="this.dateRange==true">
             <h2> Choose date range to specify commission data </h2>
-            <v-form v-model="valid" ref="form1" lazy-validation>
             <v-layout row wrap justify-center>
               <v-flex xs3 >
-                  <v-menu ref="menu1" lazy :close-on-content-click="false" v-model="menu1" transition="scale-transition" offset-y
-                    full-width :nudge-right="40" min-width="290px" :return-value.sync="date1">
-                    <v-text-field slot="activator" label="Start Date" v-model="date1" readonly></v-text-field>
-                    <v-date-picker v-model="date1" no-title scrollable>
-                      <v-spacer></v-spacer>
-                      <v-btn flat color="primary" @click="menu1 = false">Cancel</v-btn>
-                      <v-btn flat color="primary" @click="$refs.menu1.save(date1)">OK</v-btn>
-                    </v-date-picker>
-                  </v-menu>
-                  <v-menu ref="menu2" lazy :close-on-content-click="false" v-model="menu2" transition="scale-transition" offset-y
-                    full-width :nudge-right="40" min-width="290px" :return-value.sync="date2">
-                    <v-text-field slot="activator" label="End Date" v-model="date2" readonly></v-text-field>
-                    <v-date-picker v-model="date2" no-title scrollable>
-                      <v-spacer></v-spacer>
-                      <v-btn flat color="primary" @click="menu2 = false">Cancel</v-btn>
-                      <v-btn flat color="primary" @click="$refs.menu2.save(date2)">OK</v-btn>
-                    </v-date-picker>
-                  </v-menu>
-                  <v-btn @click="submit" :disabled="!valid">submit</v-btn>
+                <v-form v-model="valid" ref="form1" lazy-validation>
+                      <v-menu ref="menu1" lazy :close-on-content-click="false" v-model="menu1" transition="scale-transition" offset-y
+                        full-width :nudge-right="40" min-width="290px" :return-value.sync="date1">
+                        <v-text-field slot="activator" label="Start Date" v-model="date1" readonly></v-text-field>
+                        <v-date-picker v-model="date1" no-title scrollable>
+                          <v-spacer></v-spacer>
+                          <v-btn flat color="primary" @click="menu1 = false">Cancel</v-btn>
+                          <v-btn flat color="primary" @click="$refs.menu1.save(date1)">OK</v-btn>
+                        </v-date-picker>
+                      </v-menu>
+                    <br>
+                    <v-menu ref="menu2" lazy :close-on-content-click="false" v-model="menu2" transition="scale-transition" offset-y
+                      full-width :nudge-right="40" min-width="290px" :return-value.sync="date2">
+                      <v-text-field slot="activator" label="End Date" v-model="date2" readonly></v-text-field>
+                      <v-date-picker v-model="date2" no-title scrollable>
+                        <v-spacer></v-spacer>
+                        <v-btn flat color="primary" @click="menu2 = false">Cancel</v-btn>
+                        <v-btn flat color="primary" @click="$refs.menu2.save(date2)">OK</v-btn>
+                      </v-date-picker>
+                    </v-menu>
+                  <v-btn @click="submitComm" :disabled="!valid">submit</v-btn>
                   <v-btn @click="clear">clear</v-btn>
                   <br><br>
+                </v-form>
+
               </v-flex>
             </v-layout>
-          </v-form>
         </div>
 
-        <h2> View Top Customers </h2>
+        <h2> View Top Customers # tickets</h2>
         <v-layout row wrap justify-center>
-          <v-flex xs8 >
-            <v-data-table :headers="headers_customers" :items="items_customers" hide-actions class="elevation-1">
+          <v-flex xs5 >
+            <v-data-table :headers="headers_customers_tickets" :items="items_customers_tickets" hide-actions class="elevation-1">
               <template slot="items" slot-scope="props">
-                <td class="text-xs-center">{{ props.item.customer_email }}</td>
-                <td class="text-xs-center">{{ props.item.numbertickets }}</td>
-                <td class="text-xs-center">{{ props.item.amountcommission }}</td>
+                <td class="text-xs-left">{{ props.item.customer_email }}</td>
+                <td class="text-xs-left">{{ props.item.count_t }}</td>
+              </template>
+            </v-data-table>
+          </v-flex>
+        </v-layout>
+        <br>
+        <h2> View Top Customers Amount of Commission </h2>
+        <v-layout row wrap justify-center>
+          <v-flex xs5 >
+            <v-data-table :headers="headers_customers_comm" :items="items_customers_comm" hide-actions class="elevation-1">
+              <template slot="items" slot-scope="props">
+                <td class="text-xs-left">{{ props.item.customer_email }}</td>
+                <td class="text-xs-left">{{ props.item.sump }}</td>
               </template>
             </v-data-table>
           </v-flex>
@@ -70,27 +80,26 @@
 
         <h2> View Top Booking Agents # of Sales Month </h2>
         <v-layout row wrap justify-center>
-          <v-flex xs5 >
+          <v-flex xs7 >
             <v-data-table :headers="headers_bookMonth" :items="items_bookMonth" hide-actions class="elevation-1">
               <template slot="items" slot-scope="props">
-                <td class="text-xs-center">{{ props.item.booking_agent_id }}</td>
-                <td class="text-xs-center">{{ props.item.numbertickets_month }}</td>
-
+                <td class="text-xs-left">{{ props.item.email }}</td>
+                <td class="text-xs-left">{{ props.item.tickets }}</td>
               </template>
             </v-data-table><br>
             <h2> View Top Booking Agents # of Sales Year </h2>
             <v-data-table :headers="headers_bookYear" :items="items_bookYear" hide-actions class="elevation-1">
               <template slot="items" slot-scope="props">
-                <td class="text-xs-center">{{ props.item.booking_agent_id }}</td>
-                <td class="text-xs-center">{{ props.item.numbertickets_year }}</td>
+                <td class="text-xs-left">{{ props.item.email }}</td>
+                <td class="text-xs-left">{{ props.item.tickets }}</td>
 
               </template>
             </v-data-table> <br>
             <h2> View Top Booking Agents Amount of Commission Year </h2>
             <v-data-table :headers="headers_bookComm" :items="items_bookComm" hide-actions class="elevation-1">
               <template slot="items" slot-scope="props">
-                <td class="text-xs-center">{{ props.item.booking_agent_id }}</td>
-                <td class="text-xs-center">{{ props.item.total_commission }}</td>
+                <td class="text-xs-left">{{ props.item.email }}</td>
+                <td class="text-xs-cenleftter">{{ props.item.commission }}</td>
 
               </template>
             </v-data-table><br>
@@ -98,22 +107,23 @@
         </v-layout>
 
 
-        <h2> View Top Customer Past Year: {{this.items_topCustomer.name}} ?</h2>
+        <h2> View Top Customer Past Year: {{this.topCustomer_email}}</h2>
         <v-layout row wrap justify-center>
-          <v-flex xs5 >
+          <v-flex xs9 >
             <v-data-table :headers="headers_topCustomer" :items="items_topCustomer" hide-actions class="elevation-1">
               <template slot="items" slot-scope="props">
-                <td class="text-xs-center">{{ props.item.flight_num }}</td>
+                <td class="text-xs-center">{{ props.item.departure_airport }}</td>
+                <td class="text-xs-center">{{ props.item.departure_time }}</td>
+                <td class="text-xs-center">{{ props.item.arrival_airport }}</td>
+                <td class="text-xs-center">{{ props.item.arrival_time }}</td>
+
               </template>
             </v-data-table>
           </v-flex>
         </v-layout>
 
         <br><br><h2> Total # Tickets Sold </h2>
-        <h2> Past Month: {{this.item_ticketSold.month}} </h2>
-        <h2> Past Year: {{this.item_ticketSold.year}} </h2>
-        <v-btn flat color="primary" @click="dateChangeTicket">Change date range</v-btn>
-          <div v-if="this.dateTicket==true">
+        <h2> # of tickets sold between {{this.date3}} and {{this.date4}}: {{this.soldTotal}}</h2>
             <v-form v-model="valid" ref="form2" lazy-validation>
               <v-layout row wrap justify-center>
                 <v-flex xs3 >
@@ -135,25 +145,26 @@
                       <v-btn flat color="primary" @click="$refs.menu4.save(date4)">OK</v-btn>
                     </v-date-picker>
                   </v-menu>
-                  <v-btn @click="submit" :disabled="!valid">submit</v-btn>
+                  <v-btn @click="submitTwo" :disabled="!valid">submit</v-btn>
                   <v-btn @click="clear">clear</v-btn>
                 <br><br>
                 </v-flex>
               </v-layout>
           </v-form>
-        </div>
-        <div v-if="this.showRange==true">
-          <h2> # of tickets sold between {{this.date3}} and {{this.date4}}: {{this.items_ticketSold.range}}</h2>
-        </div>
 
         <br><br><div>
           <v-layout row wrap justify-center>
-            <v-flex xs5 >
-              <h2> Top 3 Popular Destinations</h2>
-              <v-data-table :headers="headers_destinations" :items="items_destinations" hide-actions class="elevation-1">
+            <v-flex xs7 >
+              <h2> Top 3 Popular Destinations Months</h2>
+              <v-data-table :headers="headers_dest_Month" :items="items_dest_Month" hide-actions class="elevation-1">
                 <template slot="items" slot-scope="props">
-                  <td class="text-xs-center">{{ props.item.destinations.three }}</td>
-                  <td class="text-xs-center">{{ props.item.destinations.year }}</td>
+                  <td class="text-xs-center">{{ props.item.airport_city }}</td>
+                </template>
+              </v-data-table><br>
+              <h2> Top 3 Popular Destinations Year</h2>
+              <v-data-table :headers="headers_dest_Year" :items="items_dest_Year" hide-actions class="elevation-1">
+                <template slot="items" slot-scope="props">
+                  <td class="text-xs-center">{{ props.item.airport_city }}</td>
                 </template>
               </v-data-table><br>
             </v-flex>
@@ -170,8 +181,11 @@
 <script>
 import axios from 'axios'
 import 'vuetify/dist/vuetify.min.css'
+import {Bar, Pie} from 'vue-chartjs'
+
 
 export default {
+  extends: Bar, Pie,
   data () {
     return {
       dateRange:false,
@@ -180,18 +194,19 @@ export default {
       date1:null, //start date of view commission
       menu2:false,
       date2:null, //end date of view commision
-      headers_commission: [
-        { text: 'Total Amount', value: 'totalamount' },
-        { text: 'Average per Ticket', value: 'average' },
-        { text: 'Total Number Sold', value: 'totalnumber' }
-      ],
-      items_commission: [],
-      headers_customers: [
+      items_commission_total_cost: null,
+      items_commission_avg_ticket_price: null,
+      items_commission_total_sold: null,
+      headers_customers_tickets: [
         { text: 'Customer', value: 'customer_email', sortable: false },
-        { text: 'Number of Tickets', value: 'numbertickets' },
-        { text: 'Amount of Commision', value: 'amountcommission' },
+        { text: 'Number of Tickets', value: 'count_t', sortable:false },
       ],
-      items_customers: [],
+      items_customers_tickets: [],
+      headers_customers_comm: [
+        { text: 'Customer', value: 'customer_email', sortable: false },
+        { text: 'Amount of Commision', value: 'sump',sortable:false },
+      ],
+      items_customers_comm: [],
       headers_bookMonth: [
         { text: 'Booking Agent ID', value: 'booking_agent_id', sortable: false },
         { text: '# of Tickets Sold', value: 'numbertickets_month', sortable: false },
@@ -210,26 +225,35 @@ export default {
       ],
       items_bookComm: [],
       headers_topCustomer: [
-        { text: 'Flight Number', value: 'flight_num', sortable: false },
+        { text: 'Departure Airport', value: 'departure_airport', sortable: false },
+        { text: 'Departure Time', value: 'departure_time', sortable: false },
+        { text: 'Arrival Airport', value: 'arrival_airport', sortable: false },
+        { text: 'Arrival Time', value: 'arrival_time', sortable: false },
+
       ],
       items_topCustomer: [],
-      item_ticketSold: [],
+      topCustomer_email: null,
+      item_ticketSold: [], //total number of tickets sold
       dateTicket: false,
       showRange: false,//show # tickets sold based on range
       menu3:false,
       date3:null, //start date of # tickets sold
       menu4:false,
       date4:null, //end date of # tickets sold
-      headers_destinations: [
+      headers_dest_Month: [
         { text: 'Top Destinations 3 Months', value: 'destination_three', sortable: false },
+      ],
+      items_dest_Month: [],
+      headers_dest_Year: [
         { text: 'Top Destinations Year', value: 'destination_year', sortable: false },
       ],
-      items_destinations: [],
+      items_dest_Year: [],
       today: null,
       onemonth: null,
       sixmonths: null,
       threemonths: null,
       year: null,
+      soldTotal: null, //value for view reports between dates
 
     }
   },
@@ -241,16 +265,54 @@ export default {
     this.getDate()
     console.log("this.$login", this.$login);
     if (this.$login == 'booking_agent'){
+      console.log("hi");
       this.getCommission()
       this.getTopCustomersBooking()
     }
     if (this.$login == 'airline_staff') {
       this.getTopBooking()
       this.getTopCustomerAirline()
-
+      this.getData()
     }
   },
   methods: {
+    getData() {
+      if (this.$login == 'airline_staff') {
+        const path1 = `http://localhost:5000/api/bookingagenttopdestinations`
+        axios.get(path1)
+          .then(response => {
+            var res = response.data
+            console.log("res top dest", res);
+            this.items_dest_Month = res.month_destinations
+            this.items_dest_Year = res.year_destinations
+          })
+          .catch(error => {
+            console.log("error => ", error);
+          })
+        }
+
+    if (this.$login == 'booking_agent') {
+
+      const path2 = `http://localhost:5000/api/bookingagentcommission`
+      d2 = {
+        'date1': this.today,
+        'date2': this.month, //30 days ago
+        'username': 'colton@nyu'
+      }
+      axios.post(path2, d2)
+        .then(response => {
+          var res = response.date
+          console.log("reshellooo", res);
+          // this.items_commission = res
+        })
+        .catch(error => {
+          console.log("error => ", error);
+        })
+
+
+      }
+
+    },
     addMonths(date, months) {
       date.setMonth(date.getMonth() + months);
       return date;
@@ -268,69 +330,74 @@ export default {
       this.dateTicket = true
     },
     getTopCustomerAirline() { //top customers for airline staff
-      const path = `http://localhost:5000/api/##` //commission
+      const path = `http://localhost:5000/api/viewfrequentcustomers`
       var d = {
-        "today": this.today,
-        "year": this.year,
+        "date2": this.today,
+        "date1": this.year,
+        "username": 'colton@nyu'
       }
       axios.post(path, d)
         .then(response => {
           var res = response.data //return flights
           console.log(res);
-          //this.items_topCustomer = res
-          //only give flight_num for that customer
+          this.topCustomer_email = res.customers[0].email
+          this.items_topCustomer = res.customers[0].flights
+          // only give flight_num for that customer
         })
         .catch(error => {
           console.log("error => ", error);
         })
     },
     getTopBooking() { //top booking agents for airline staff
-      const path = `http://localhost:5000/api/##` //commission
-      var d = {
-        "today": this.today,
-        "onemonth": this.onemonth,
-        "year": this.year,
-      }
-      axios.post(path, d)
+      const path = `http://localhost:5000/api/airlinestaffbookingagents` //commission
+      axios.get(path)
         .then(response => {
           var res = response.data //return flights
           console.log(res);
-          //this.items_bookMonth = res.bookMonth
-          //this.items_bookYear = res.bookYear
-          //this.items_bookComm = res.bookComm
+          this.items_bookMonth = res.ticket_month_data
+          this.items_bookYear = res.ticket_year_data
+          this.items_bookComm = res.commission_year_data
         })
         .catch(error => {
           console.log("error => ", error);
         })
     },
     getTopCustomersBooking() { //top customers for booking agents
-      const path = `http://localhost:5000/api/##` //commission
+      const path = `http://localhost:5000/api/bookingagenttopcustomers` //commission
       var d = {
-        "today": this.today,
-        "sixmonths": this.sixmonths,
-        "year": this.year,
+        "date2": this.today,
+        "date1": this.sixmonths,
+        'username': 'c'
       }
+      console.log("d",d);
       axios.post(path, d)
         .then(response => {
           var res = response.data //return flights
-          console.log(res);
-          //this.items_customers = res.dataitems
+          console.log("top cust",res);
+          this.items_customers_tickets = res.ticket_data
+          this.items_customers_comm = res.commission_data
         })
         .catch(error => {
           console.log("error => ", error);
         })
+
     },
     getCommission() {
-      const path = `http://localhost:5000/api/##` //commission
+      const path = `http://localhost:5000/api/bookingagentcommission` //commission
+      console.log("thismonth", this.onemonth);
+      console.log("today", this.today);
       var d = {
-        "today": this.today,
-        "onemonth": this.onemonth,
+        "date2": this.today,
+        "date1": this.onemonth,
+        "username": 'c',
       }
       axios.post(path, d)
         .then(response => {
           var res = response.data //return flights
-          console.log(res);
-          //this.items_commission = res.dataitems
+          console.log("res",res);
+          this.items_commission_total_cost= res.total_cost
+          this.items_commission_avg_ticket_price = res.avg_ticket_price
+          this.items_commission_total_sold = res.total_sold
         })
         .catch(error => {
           console.log("error =>", error);
@@ -344,64 +411,65 @@ export default {
       this.$refs.form2.reset()
 
     },
-    submit (){
-      if (this.$refs.form1.validate()) { //search flights for staff
-        const path = `http://localhost:5000/api/##` //commission
-        var d = {
-          "start_date": this.date1,
-          "end_date": this.date2,
-        }
-        axios.post(path, d)
-          .then(response => {
-            var res = response.data //return flights
-            console.log(res);
-            //this.items_commission = res.dataitems
-            this.dateRange = false //close the date range chooser
-          })
-          .catch(error => {
-            console.log("error getting flights");
-          })
-      }
-      if (this.$refs.form2.validate()) { //# tickets based on date range
-        const path = `http://localhost:5000/api/##` //commission
-        var d = {
-          "start_date": this.date3,
-          "end_date": this.date4,
-        }
-        axios.post(path, d)
-          .then(response => {
-            var res = response.data //return flights
-            console.log(res);
-            //this.items_ticketSold = res.dataitems
-            this.dateTicket = false //close the date range chooser
-            this.showRange = true //show # tickets sold based on range
-          })
-          .catch(error => {
-            console.log("error getting flights");
-          })
-      }
-    },
-    loginType() {
-      const path = `http://localhost:5000/api/####`
+    submitComm (){
+      const path = `http://localhost:5000/api/bookingagentcommission` //commission
       var d = {
-        "login_type": this.$login,
-        "page_type": "statistics"
+        "date1": this.date1,
+        "date2": this.date2,
+        "username": 'c'
       }
       axios.post(path, d)
         .then(response => {
-          var res = response.data //give me login_usertype,
+          var res = response.data //return flights
           console.log(res);
-          if (res.login_usertype == 'booking_agent') {
-            //this.items_booking = res.dataitems
-          }
-          if (res.login_usertype == 'airline_staff') {
-            //this.items_airline = res.dataitems
-          }
+          this.items_commission_total_cost= res.total_cost
+          this.items_commission_avg_ticket_price = res.avg_ticket_price
+          this.items_commission_total_sold = res.total_sold
+          this.dateRange = false //close the date range chooser
         })
         .catch(error => {
-          console.log("error changing status");
+          console.log("error getting flights");
         })
-    }
+
+    },
+    submitTwo( ){
+      const path4 = `http://localhost:5000/api/viewreports`
+        var d2 = {
+          "date2": this.date4,
+          "date1": this.date3,
+        }
+        axios.post(path4, d2)
+          .then(response => {
+            var res = response.data
+            this.soldTotal = res.total
+            console.log("res view reports", res);
+
+          })
+          .catch(error => {
+            console.log("error => ", error);
+          })
+    },
+    // loginType() {
+    //   const path = `http://localhost:5000/api/####`
+    //   var d = {
+    //     "login_type": this.$login,
+    //     "page_type": "statistics"
+    //   }
+    //   axios.post(path, d)
+    //     .then(response => {
+    //       var res = response.data //give me login_usertype,
+    //       console.log(res);
+    //       if (res.login_usertype == 'booking_agent') {
+    //         //this.items_booking = res.dataitems
+    //       }
+    //       if (res.login_usertype == 'airline_staff') {
+    //         //this.items_airline = res.dataitems
+    //       }
+    //     })
+    //     .catch(error => {
+    //       console.log("error changing status");
+    //     })
+    // }
   }
 }
 </script>

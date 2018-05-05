@@ -61,7 +61,7 @@ export default {
     }
   },
   created () {
-    //this.getData()
+    this.getDate()
   },
   methods: {
     addMonths(date, months) {
@@ -73,6 +73,7 @@ export default {
       this.today = this.today.toISOString().substring(0, 10); //yyyy-mm-dd
       this.sixmonths = this.addMonths(new Date(),-6).toISOString().substring(0, 10)
       this.year = this.addMonths(new Date(),-12).toISOString().substring(0, 10)
+      this.getData()
     },
     getData() {
       const path = `http://localhost:5000/api/customerspending` //commission
@@ -82,11 +83,12 @@ export default {
         "date2": this.sixmonths,
         "year": this.year,
       }
+      console.log("d",d);
       axios.post(path,d)
         .then(response => {
           var res = response.data //return flights
-          console.log(res);
-          //this.spending = res.data???
+          console.log("test",res);
+          this.spending = res.total
         })
         .catch(error => {
           console.log("error => ", error);
@@ -106,7 +108,7 @@ export default {
           .then(response => {
             var res = response.data //return flights
             console.log(res);
-            //this.spending = res.data???
+            this.spending = res.total
           })
           .catch(error => {
             console.log("error => ", error);
