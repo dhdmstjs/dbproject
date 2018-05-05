@@ -78,7 +78,7 @@ select airline_name from airline_staff where airline_staff.username = "dirty_dan
 --Airline Staff Get flights:
 SELECT * FROM flight where airline_name = "American Airlines"
 
---Get Customer list from flight name:
+--Get Customer list from flight number:
 SELECT customer_email, name, date_of_birth from flight natural join ticket natural join purchases natural join customer 
 where flight_num = "98765" and purchases.customer_email = customer.email
 
@@ -114,7 +114,8 @@ order by count(ticket_id) desc
 limit 5
 
 
---Get Frequent customers
+--Get Frequent customers for a given airline for the last year
+--We rank them by number of tickets purchased and take at most 10 of them
 SELECT customer.email, count(ticket.ticket_id) from flight natural join ticket natural join purchases natural join customer 
 where airline_name = "China Eastern" and purchases.customer_email = customer.email 
 and purchase_date BETWEEN DATE_SUB("2018-05-05", INTERVAL 1 YEAR) and "2018-05-05"
@@ -122,9 +123,9 @@ group by customer.email
 order by count(ticket.ticket_id) DESC
 limit 10
 
---Get flights for a customer
+--Get flights for a customer for  given airline
 select * from customer natural join purchases natural join ticket natural join flight 
-where customer.email = purchases.customer_email and customer.email = "colton@nyu"
+where customer.email = purchases.customer_email and customer.email = "colton@nyu" and flight.airline_name = "Korean Air"
 
 --View Reports: total amount of tickets sold based on range of dates
 SELECT count(ticket.ticket_id) as count_t from flight natural join ticket natural join purchases
@@ -152,6 +153,19 @@ select airport_city, count(ticket_id) as count_t from airport, flight natural jo
 where airport.airport_name = flight.arrival_airport
 and flight.departure_time BETWEEN DATE_SUB("2018-05-05", INTERVAL 1 YEAR) and "2018-05-05"
 group by airport_city
+
+--Forms:
+--Create Flight
+insert into flight values(%s,%s, %s, %s, %s, %s, %s, %s, %s)
+
+--Update Flight Status
+UPDATE `flight` SET `status` = %s WHERE `flight`.`airline_name` = %s AND `flight`.`flight_num` = %s;
+
+--Add Airplane
+insert into airplane values(%s, %s, %s);
+
+--Add Airport
+insert into `airport` values(%s, %s);
 
 --/Airline Staff-------------------------------
 

@@ -28,25 +28,14 @@ conn = pymysql.connect(host='localhost',
                        cursorclass=pymysql.cursors.DictCursor)
 
 ###
-with app.app_context():
-    cursor = conn.cursor()
-    date1 = "2015-05-05"
-    date2 = "2019-05-06"
-    airline_name = get_airline_staff_airline_name()
-    query = 'SELECT count(ticket.ticket_id) as count_t, YEAR(purchase_date) as year, MONTH(purchase_date) as month from flight natural join ticket natural join purchases where airline_name = %s and purchase_date BETWEEN %s and %s'
-    args = (airline_name, date1, date2)
-    cursor.execute(query, args)
-    data = cursor.fetchall()
-    
-###
-labels,vals = dates_to_array(date1, date2)
-if data:
-    for d in data:
-        d['count_t'] = int(d['count_t'])
-        date = str(d['year']) + '-' + "%02d"%d['month']
-        print(date)
-        i = labels.index(date)
-        vals[i] = d['count_t']
+#with app.app_context():
+#    cursor = conn.cursor()
+#    airline_name = get_airline_staff_airline_name()
+#    date = today_date()
+#    args = (airline_name, date, date)
+#    query = 'SELECT customer.email, count(ticket.ticket_id) from flight natural join ticket natural join purchases natural join customer where airline_name = %s and purchases.customer_email = customer.email and purchase_date BETWEEN DATE_SUB(%s, INTERVAL 1 YEAR) and %s group by customer.email order by count(ticket.ticket_id) DESC limit 10'
+#    cursor.execute(query, args)
+#    data = cursor.fetchall()
 
 @app.route('/api/getflights', methods=['GET', 'POST'])
 def get_flights():
@@ -64,9 +53,27 @@ def get_flights():
     ret = cursor.fetchall()
     return json.dumps(ret,default=str)
 
-@app.route('/api/createflight', methods=['GET', 'POST'])
+@app.route('/api/changeflightstatus', methods=['GET', 'POST'])
+def change_flight_status():
+    airline = get_airline_staff_airline_name()
+    rec = request.json
+    for r in rec:
+        if not rec[r]:
+            return json.dumps({"success":"false", "message": "please submit all of the required fields"})
+    args = (rec['flight_status'],airline,rec['flight_num'])
+    cursor = conn.cursor()
+    conn.commit()
+    query = 'UPDATE `flight` SET `status` = %s WHERE `flight`.`airline_name` = %s AND `flight`.`flight_num` = %s;'
+    try:
+        cursor.execute(query, args)
+        conn.commit()
+    except Exception as e:
+        print(e)
+        return json.dumps({"success":"false", "message": "database query failed"})
+    return json.dumps({"success":"true", "message": "Flight status updated successfully"})
+
+@app.route('/api/createflight', methods=['GET','POST'])
 def create_flight():
-    global rec
     rec = request.json
     for r in rec:
         if not rec[r]:
@@ -81,20 +88,42 @@ def create_flight():
     except Exception as e:
         print(e)
         return json.dumps({"success":"false", "message": "database query failed"})
-    
-    return json.dumps({"success":"true", "message": "Flight inserted successfully"})
-
-@app.route('/api/changeflightstatus', methods=['GET','POST'])
-def change_flight_status():
-    pass
+    return json.dumps({"success":"true", "message": "Flight created successfully"})
 
 @app.route('/api/addairplane', methods=['GET','POST'])
 def add_airplane():
-    pass
-
+    airline = get_airline_staff_airline_name()
+    rec = request.json
+    for r in rec:
+        if not rec[r]:
+            return json.dumps({"success":"false", "message": "please submit all of the required fields"})
+    cursor = conn.cursor()
+    query = 'insert into airplane values(%s, %s, %s)'
+    args = (airline, rec['airplane_id'], rec['seats'])
+    try:
+        cursor.execute(query, args)
+        conn.commit()
+    except Exception as e:
+        print(e)
+        return json.dumps({"success":"false", "message": "database query failed"})
+    return json.dumps({"success":"true", "message": "Airplane created successfully"})
+    
 @app.route('/api/addairport', methods=['GET','POST'])
 def add_airport():
-    pass
+    rec = request.json
+    for r in rec:
+        if not rec[r]:
+            return json.dumps({"success":"false", "message": "please submit all of the required fields"})
+    cursor = conn.cursor()
+    query = 'insert into `airport` values(%s, %s);'
+    args = (rec['airport_name'], rec['airport_city'])
+    try:
+        cursor.execute(query, args)
+        conn.commit()
+    except Exception as e:
+        print(e)
+        return json.dumps({"success":"false", "message": "database query failed"})
+    return json.dumps({"success":"true", "message": "Airport created successfully"})
 
 @app.route('/register/auth', methods = ['GET', 'POST'])
 def registerAuth():
@@ -215,7 +244,7 @@ def get_customer_flights():
     print(data)
     return json.dumps({"success":"true", "message": "query successful", "data" : data})
 
-@app.route('api/bookingagentflights', methods = ['GET', 'POST'])
+@app.route('/api/bookingagentflights', methods = ['GET', 'POST'])
 def get_booking_agent_flights():
 #    if "username" not in session:
 #        return json.dumps({"success":"false", "message": "You must be logged in"})
@@ -303,6 +332,7 @@ def get_booking_agent_commission():
     avg_ticket_price = float(cursor.fetchone()['avg_ticket_price'])
     return json.dumps({"success":"true", "message": "Query succeeded", "total_cost":sump, "avg_ticket_price":avg_ticket_price, "total_sold":total_sold})
     
+#requires "username" during the testing phase
 @app.route('/api/bookingagenttopcustomers', methods = ['GET', 'POST'])
 def get_top_customers():
     rec = request.json
@@ -338,6 +368,8 @@ def get_top_customers():
     
     return json.dumps({"success":"true", "message":"database query succeeded", "ticket_customers":ticket_ret, "commission_customers":commission_ret})
 
+#requires "flight_num"
+#requires "customer_username" if role is booking_agent
 @app.route('/purchase/ticket', methods = ['GET', 'POST'])
 def buy_ticket():
     #check if tickets are available
@@ -528,6 +560,29 @@ def view_reports():
             vals[i] = d['count_t']
     return json.dumps({"success":"false", "message": "database query failed", "labels":labels, "values":vals})
 
+@app.route('/api/viewfrequentcustomers', methods = ['GET', 'POST'])
+def view_frequent_customers():
+    airline_name = get_airline_staff_airline_name()
+    date = today_date()
+    query = 'SELECT customer.email, count(ticket.ticket_id) as count_t from flight natural join ticket natural join purchases natural join customer where airline_name = %s and purchases.customer_email = customer.email and purchase_date BETWEEN DATE_SUB(%s, INTERVAL 1 YEAR) and %s group by customer.email order by count(ticket.ticket_id) DESC limit 10' 
+    args = (airline_name, date, date)
+    cursor = conn.cursor()
+    try:
+        cursor.execute(query, args)
+    except Exception as e:
+        print(e)
+        return json.dumps({"success":"false", "message": "database query failed"})
+    data = cursor.fetchall() 
+    for d in data:
+        email = d['email']
+        query = 'select name, departure_airport, departure_time, arrival_airport, arrival_time from customer natural join purchases natural join ticket natural join flight where customer.email = purchases.customer_email and customer.email = %s and flight.airline_name = %s'
+        args = (email, airline_name)
+        cursor.execute(query,args)
+        f = cursor.fetchall()
+        d.update({"flights":f})
+        
+    json.dump({"success":"true", "message": "database query succeeded", "customers":data})
+    
 @app.route('/logout/auth', methods=['GET', 'POST'])
 def logout():
     if "username" in session:
