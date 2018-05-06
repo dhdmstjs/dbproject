@@ -244,6 +244,8 @@ import axios from 'axios'
 import 'vuetify/dist/vuetify.min.css'
 import BarChart from './Bar'
 import PieChart from './Pie'
+import Vue from 'vue'
+
 
 export default {
   components: {

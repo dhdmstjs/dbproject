@@ -127,6 +127,8 @@
 <script>
 import axios from 'axios'
 import 'vuetify/dist/vuetify.min.css'
+import Vue from 'vue'
+
 
 export default {
   data () {

@@ -1,4 +1,4 @@
-airport<template>
+<template>
   <div>
     <v-app>
     <v-layout row wrap justify-center>
@@ -152,6 +152,7 @@ airport<template>
 <script>
 import axios from 'axios'
 import 'vuetify/dist/vuetify.min.css'
+import Vue from 'vue'
 
 export default {
   data () {
