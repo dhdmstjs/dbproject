@@ -19,7 +19,7 @@ app = CustomFlask(__name__, static_folder = "./dist/static", template_folder = "
 cors = CORS(app)
 
 #Configure MySQL
-conn = pymysql.connect(host='192.168.64.2',
+conn = pymysql.connect(host='localhost',
                        user='root',
                        password='',
                        db='airplanes',
@@ -45,6 +45,10 @@ def get_flights():
 
 @app.route('/api/changeflightstatus', methods=['GET', 'POST'])
 def change_flight_status():
+    if 'role' not in session:
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
+    if session['role'] != "airline_staff":
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
     airline = get_airline_staff_airline_name()
     rec = request.json
     for r in rec:
@@ -64,6 +68,10 @@ def change_flight_status():
 
 @app.route('/api/createflight', methods=['GET','POST'])
 def create_flight():
+    if 'role' not in session:
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
+    if session['role'] != "airline_staff":
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
     rec = request.json
     for r in rec:
         if not rec[r]:
@@ -82,6 +90,10 @@ def create_flight():
 
 @app.route('/api/addairplane', methods=['GET','POST'])
 def add_airplane():
+    if 'role' not in session:
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
+    if session['role'] != "airline_staff":
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
     airline = get_airline_staff_airline_name()
     rec = request.json
     for r in rec:
@@ -100,6 +112,10 @@ def add_airplane():
 
 @app.route('/api/addairport', methods=['GET','POST'])
 def add_airport():
+    if 'role' not in session:
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
+    if session['role'] != "airline_staff":
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
     rec = request.json
     for r in rec:
         if not rec[r]:
@@ -217,10 +233,9 @@ def send_session_vars():
 
 @app.route('/api/customerflights', methods = ['GET', 'POST'])
 def get_customer_flights():
-#    if "username" not in session:
-#        return json.dumps({"success":"false", "message": "You must be logged in"})
-    rec = request.json
-    username = rec['username']#session['username']
+    if "username" not in session:
+        return json.dumps({"success":"false", "message": "You must be logged in"})
+    username = session['username']
     query = 'SELECT airline_name, flight_num, purchase_date, departure_airport, departure_time, arrival_airport, arrival_time, status FROM purchases natural join ticket natural join flight WHERE departure_time > %s and customer_email = %s;'
     args = (today_date(), username)
     cursor = conn.cursor()
@@ -236,10 +251,9 @@ def get_customer_flights():
 
 @app.route('/api/bookingagentflights', methods = ['GET', 'POST'])
 def get_booking_agent_flights():
-#    if "username" not in session:
-#        return json.dumps({"success":"false", "message": "You must be logged in"})
-    rec = request.json
-    username = rec['username']#session['username']
+    if "username" not in session:
+        return json.dumps({"success":"false", "message": "You must be logged in"})
+    username = session['username']
     query = 'SELECT airline_name, flight_num, purchase_date, customer_email, arrival_time, departure_airport, departure_time, arrival_airport, status FROM purchases natural join ticket natural join flight natural join booking_agent WHERE departure_time > %s and booking_agent.email = %s;'
     args = (today_date(), username)
     cursor = conn.cursor()
@@ -257,10 +271,10 @@ def get_booking_agent_flights():
 #requires "date1" and date2" (requires "username" only in the testing stage)
 @app.route('/api/customerspending', methods = ['GET','POST'])
 def get_customer_spending():
-#    if "username" not in session:
-#        return json.dumps({"success":"false", "message": "You must be logged in"})
+    if "username" not in session:
+        return json.dumps({"success":"false", "message": "You must be logged in"})
     rec = request.json
-    username = rec["username"] #session['username']
+    username = session['username']
     date1 = rec['date1']
     date2 = rec['date2']
     cursor = conn.cursor()
@@ -293,12 +307,12 @@ def get_customer_spending():
 def get_booking_agent_commission():
     global data
     cursor = conn.cursor()
-#    if "username" not in session or "role" not in session:
-#        return json.dumps({"success":"false", "message": "You must be logged in for this operation"})
+    if "username" not in session or "role" not in session:
+        return json.dumps({"success":"false", "message": "You must be logged in for this operation"})
     rec = request.json
     date1 = rec['date1']
     date2 = rec['date2']
-    email = rec['username']#session['username']
+    email = session['username']
     query = 'SELECT .10*sum(price) as sump FROM `booking_agent` natural join purchases natural join ticket natural join flight where purchase_date BETWEEN %s and %s and booking_agent.email = %s'
     args = (date1,date2, email)
     try:
@@ -342,9 +356,8 @@ def get_booking_agent_commission():
 @app.route('/api/bookingagenttopcustomers', methods = ['GET', 'POST'])
 def get_top_customers():
     cursor = conn.cursor()
-    rec = request.json
     date1 = date2 = today_date()
-    email = rec['username']#session['username']
+    email = session['username']
     commission_query = 'SELECT .10*sum(price) as sump, customer_email FROM `booking_agent` natural join purchases natural join ticket natural join flight where booking_agent.email = %s and purchase_date BETWEEN DATE_SUB(%s, INTERVAL 1 YEAR) and %s group by customer_email ORDER BY `sump` DESC limit 5'
     ticket_query = 'SELECT customer_email, count(ticket_id) as count_t FROM `booking_agent` natural join purchases natural join ticket natural join flight where booking_agent.email = %s and purchase_date BETWEEN DATE_SUB(%s, INTERVAL 6 MONTH) and %s group by customer_email ORDER BY count(ticket_id) DESC limit 5'
     args = (email, date1, date2)
@@ -389,6 +402,7 @@ def buy_ticket():
     print(session.keys())
     if "username" not in session:
         return json.dumps({"success":"false", "message": "You must be logged in before you can make a purchase"})
+    print(session['username'])
     query = "SELECT * FROM flight natural join ticket where ticket_id NOT IN (SELECT ticket_id FROM ticket natural join purchases) and flight_num = %s"
     args = (flight_num)
     cursor = conn.cursor()
@@ -421,10 +435,12 @@ def buy_ticket():
     return json.dumps({"success":"true", "message": "Ticket purchased!"})
 
 def get_airline_staff_airline_name():
-#        if 'username' not in session:
-#           return ''
+    if 'role' not in session:
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
+    if session['role'] != "airline_staff":
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
     cursor = conn.cursor()
-    username = 'dirty_dan@gmail.com'#username = session['username']
+    username = username = session['username']
     query = 'select airline_name from airline_staff where airline_staff.username = %s'
     try:
         cursor.execute(query, (username))
@@ -438,18 +454,21 @@ def get_airline_staff_airline_name():
 
 @app.route('/api/airlinestaffflights', methods = ['GET', 'POST'])
 def get_airline_staff_flights():
-    global rec
+    if 'role' not in session:
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
+    if session['role'] != "airline_staff":
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
     rec = request.json
     cursor = conn.cursor()
     airline = get_airline_staff_airline_name()
-    if not rec['departure_time']:
+    if not rec['date1']:
         date1 = "1900-01-01"
     else:
-        date1 = rec['departure_time']
-    if not rec['arrival_time']:
+        date1 = rec['date1']
+    if not rec['date2']:
         date2 = "3000-01-01"
     else:
-        date2 = rec['arrival_time']
+        date2 = rec['date2']
     if rec['arrival_airport'] and rec['departure_airport']:
         query_flights = 'SELECT * FROM flight where airline_name = %s and departure_time between %s and %s and departure_airport = %s and arrival_airport = %s'
         args = (airline, date1, date2+' 23:59:59', rec['departure_airport'], rec['arrival_airport'])
@@ -486,6 +505,10 @@ def get_airline_staff_flights():
 
 @app.route('/api/airlinestaffbookingagents', methods = ['GET', 'POST'])
 def get_airline_staff_booking_agents():
+    if 'role' not in session:
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
+    if session['role'] != "airline_staff":
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
     cursor = conn.cursor()
     airline = get_airline_staff_airline_name()
     args = (airline, today_date(), today_date())
@@ -542,6 +565,10 @@ def get_top_destinations():
 
 @app.route('/api/comparerevenue', methods=['GET', 'POST'])
 def compare_revenue():
+    if 'role' not in session:
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
+    if session['role'] != "airline_staff":
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
     cursor = conn.cursor()
     airline = get_airline_staff_airline_name()
     date1 = date2 = today_date()
@@ -596,6 +623,10 @@ def compare_revenue():
 #requires date1 and date2 from frontend
 @app.route('/api/viewreports', methods=['GET', 'POST'])
 def view_reports():
+    if 'role' not in session:
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
+    if session['role'] != "airline_staff":
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
     rec = request.json
     date1 = rec['date1']
     date2 = rec['date2']
@@ -624,6 +655,10 @@ def view_reports():
 
 @app.route('/api/viewfrequentcustomers', methods = ['GET', 'POST'])
 def view_frequent_customers():
+    if 'role' not in session:
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
+    if session['role'] != "airline_staff":
+        return json.dumps({"success":"false", "message": "You do not have permission for this request"})
     cursor = conn.cursor()
     airline_name = get_airline_staff_airline_name()
     date = today_date()
@@ -658,8 +693,6 @@ def logout():
 @app.route('/<path:path>')
 def catch_all(path):
     return render_template("index.html", username = "colton")
-    #here's where you left off
-
 
 if __name__ == "__main__":
     app.secret_key = "I gotta s3cret key that youll never know"
