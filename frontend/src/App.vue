@@ -265,7 +265,7 @@ export default {
     changeDropdown() { //where dropdown btns will be shown
       if (this.$login == 'customer') {
         this.dropdown = [
-          {title: 'My Bookings'},
+          {title: 'Bookings'},
           {title: 'Track Spending'},
           {title: 'Logout'}
         ]
@@ -279,7 +279,7 @@ export default {
       }
       if (this.$login == 'airline_staff') {
         this.dropdown = [
-          {title: 'Bookings/Flights'},
+          {title: 'Bookings'},
           {title: 'Statistics'},
           {title: 'Forms'},
           {title: 'Logout'}
@@ -306,7 +306,7 @@ export default {
       if (item == "Forms") {
         window.location.replace('http://localhost:5000/forms')
       }
-      if (item == "My Bookings") {
+      if (item == "Bookings") {
         window.location.replace('http://localhost:5000/bookings')
       }
       if (item == "Track Spending") {
