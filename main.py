@@ -19,7 +19,7 @@ app = CustomFlask(__name__, static_folder = "./dist/static", template_folder = "
 cors = CORS(app)
 
 #Configure MySQL
-conn = pymysql.connect(host='localhost',
+conn = pymysql.connect(host='192.168.64.2',
                        user='root',
                        password='',
                        db='airplanes',
@@ -576,7 +576,7 @@ def compare_revenue():
         revenue_from_agents = int(cursor.fetchone()['sump'])
     else:
         revenue_from_agents = 0
-    return json.dump({"success":"true", "message": "database query succeeded", "direct_sales_revenue":revenue_from_direct_sales, "booking_agents_sales":revenue_from_agents})
+    return json.dump({"success":"true", "message": "database query succeeded", "direct_sales_revenue":revenue_from_direct_sales, "booking_agents_sales":revenue_from_agents},indent=4,sort_keys=True, default=str)
 
 #requires date1 and date2 from frontend
 @app.route('/api/viewreports', methods=['GET', 'POST'])
