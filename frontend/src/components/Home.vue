@@ -166,8 +166,18 @@ export default {
       session: '',
     }
   },
+
   created () {
-    // this.$login = 'customer'
+    const path = `http://localhost:5000/session/vars`;
+    axios.post(path)
+      .then(response => {
+        let res = response.data;
+        console.log("res" ,res);
+        Vue.prototype.$login = '' //set user type here
+      })
+      .catch(error => {
+        console.log('getting session vars-->', error);
+      });
   },
   methods: {
     submit() {
@@ -210,7 +220,6 @@ export default {
       }
     },
     clear() {
-      console.log(this.getSessionVars());
       this.$refs.form.reset()
     },
     buyItem(item) {

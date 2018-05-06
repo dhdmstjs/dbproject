@@ -177,6 +177,9 @@ def registerAuth():
         print(e)
         print(cursor._last_executed)
         return json.dumps({"success":"false", "message":"database insertion failed"})
+    
+    session['username'] = rec['email']
+    session['role'] = rec['typ']
     return json.dumps({"success":"true", "message":"Registration successfull"})
 
 @app.route('/login/auth', methods=['GET', 'POST'])
@@ -229,6 +232,7 @@ def send_session_vars():
         role = session["role"]
     else:
         role = ""
+    print(username, role)
     return json.dumps({"username":username, "role":role})
 
 @app.route('/api/customerflights', methods = ['GET', 'POST'])

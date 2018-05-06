@@ -41,13 +41,13 @@ GROUP BY YEAR(purchase_date), MONTH(purchase_date);
 --Booking Agent-----------------
 -- Total over period of time
 SELECT .10*sum(price) as sump FROM `booking_agent` natural join purchases natural join ticket natural join flight 
-where purchase_date BETWEEN "2017-04-03" and "2019-04-04" and booking_agent.booking_agent_id = %s
+where purchase_date BETWEEN %s and %s and booking_agent.booking_agent_id = %s
 
 --Average ticket price commission
-SELECT .10*sum(price)/count(ticket_id) as avg_ticket_price FROM `booking_agent` natural join purchases natural join ticket natural join flight where purchase_date BETWEEN "2017-04-03" and "2019-04-04"
+SELECT .10*sum(price)/count(ticket_id) as avg_ticket_price FROM `booking_agent` natural join purchases natural join ticket natural join flight where purchase_date BETWEEN %s and %s
 
 --Total Number of Tickets sold
-SELECT count(ticket_id) as total_sold FROM `booking_agent` natural join purchases natural join ticket natural join flight where purchase_date BETWEEN "2017-04-03" and "2019-04-04"
+SELECT count(ticket_id) as total_sold FROM `booking_agent` natural join purchases natural join ticket natural join flight where purchase_date BETWEEN %s and %s
 
 --Booking Agent Top 5 customers from Number of tickets sold
 

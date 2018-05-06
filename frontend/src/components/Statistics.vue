@@ -419,25 +419,30 @@ export default {
     }
   },
   created () {
-    // this.loginType()
-    // this.$login = 'booking_agent'
-
-    // this.$login = 'airline_staff'
     this.getDate()
-    console.log("this.$login", this.$login);
-    if (this.$login == 'booking_agent'){
-      console.log("hi");
-      this.getCommission()
-      this.getTopCustomersBooking()
-    }
-    if (this.$login == 'airline_staff') {
-      this.getTopBooking()
-      this.getTopCustomerAirline()
-      this.getData()
-      this.getPie()
-    }
 
-
+    const path = `http://localhost:5000/session/vars`;
+    axios.post(path)
+      .then(response => {
+        let res = response.data;
+        console.log("res" ,res);
+        Vue.prototype.$login = '' //set user type here
+        console.log("this.$login", this.$login);
+        if (this.$login == 'booking_agent'){
+          console.log("hi");
+          this.getCommission()
+          this.getTopCustomersBooking()
+        }
+        if (this.$login == 'airline_staff') {
+          this.getTopBooking()
+          this.getTopCustomerAirline()
+          this.getData()
+          this.getPie()
+        }
+      })
+      .catch(error => {
+        console.log('getting session vars-->', error);
+      });
 
   },
   methods: {
@@ -654,27 +659,27 @@ export default {
             var res = response.data
             console.log("res view compare", res);
             this.pieData = true
-            let direct_labels = []
-            let indirect_labels = []
-            direct_labels.push('direct_sales_month')
-            direct_labels.push('direct_sales_year')
-            indirect_labels.push('indirect_sales_month')
-            indirect_labels.push('indirect_sales_year')
-            let direct_values = [res.direct_sales_month, res.direct_sales_year]
-            let indirect_values = [res.agents_sales_month, res.agent_sales_year]
+            let month_labels = []
+            let year_labels = []
+            month_labels.push('direct_sales_month')
+            year_labels.push('direct_sales_year')
+            month_labels.push('indirect_sales_month')
+            year_labels.push('indirect_sales_year')
+            let month_values = [res.direct_sales_month, res.agents_sales_month]
+            console.log(month_values)
+            let year_values = [res.direct_sales_year, res.agent_sales_year]
 
-            this.dataPie.labels = direct_labels
-            this.dataPie.datasets.data = direct_values
-            this.dataPie.datasets[0].data = direct_values
-            this.dataPie.datasets[0].label = "direct sales"
-            this.pieOptions.title.text = 'Direct Sales'
+            this.dataPie.labels = month_labels
+            this.dataPie.datasets.data = month_values
+            this.dataPie.datasets[0].data = month_values
+            this.pieOptions.title.text = 'Month Sales'
 
             this.pieDataTwo = true
-            this.dataPieTwo.labels = indirect_labels
-            this.dataPieTwo.datasets.data = indirect_values
-            this.dataPieTwo.datasets[0].data = indirect_values
-            this.dataPieTwo.datasets[0].label = "indirect sales"
-            this.pieOptionsTwo.title.text = 'InDirect Sales'
+            this.dataPieTwo.labels = year_labels
+            this.dataPieTwo.datasets.data = year_values
+            this.dataPieTwo.datasets[0].data = year_values
+            this.pieOptionsTwo.title.text = 'Year Sales'
+
 
 
 

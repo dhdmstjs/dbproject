@@ -217,15 +217,21 @@ export default {
     }
   },
   created () {
-    // this.$login = 'airline_staff'
-    // this.$login = 'booking_agent'
-    // this.$login = 'customer'
 
-    console.log("this", this.$login);
-    //call from db type of login
-    //this.$login = ''
     this.getDate()
-    this.callData() //calls data for bookings
+    const path = `http://localhost:5000/session/vars`;
+    axios.post(path)
+      .then(response => {
+        let res = response.data;
+        console.log("res" ,res);
+        Vue.prototype.$login = '' //set user type here
+        this.callData() //calls data for bookings
+
+      })
+      .catch(error => {
+        console.log('getting session vars-->', error);
+      });
+
   },
   methods: {
     addMonths(date, months) {

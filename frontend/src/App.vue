@@ -184,7 +184,7 @@ export default {
     }
   },
   created () {
-    this.getSessionVars()
+    //this.getSessionVars()
     // if (this.$login != null) {
     //   this.login= true
     // }
@@ -193,23 +193,24 @@ export default {
     router (item) {
       console.log("router item",item);
       if (item ==  'home') {
-        window.location.replace('http://localhost:8000')
+        window.location.replace('http://localhost:5000')
       }
     },
     loginfunction() {
       console.log('testing login', this.username, "+ ", this.password)
       const path = `http://localhost:5000/login/auth`;
       console.log("$login", this.$login);
-      this.changeDropdown() //testing
       // this.login = true
       var d = {"email":this.username, "password":this.password, "typ":this.loginRadio};
       axios.post(path,d)
         .then(response => {
           var res = response.data;
           console.log(res);
-          this.login = true //change this.login = true for menu
-          this.getSessionVars()
-          this.changeDropdown()//since login worked, call function to change dropdown
+          if (res['success'] == "true") {
+            this.login = true //change this.login = true for menu
+            this.getSessionVars()
+            this.changeDropdown()//since login worked, call function to change dropdown
+          }
         })
         .catch(error => {
           console.log('login -->', error);
@@ -239,9 +240,11 @@ export default {
         .then(response => {
           var res = response.data;
           console.log(res);
-          this.login = true //change this.login = true for menu
-          this.getSessionVars()
-          this.changeDropdown() //since register worked, call function to change dropdown
+          if (res['success'] == "true") {
+            this.login = true //change this.login = true for menu
+            this.getSessionVars()
+            this.changeDropdown() //since register worked, call function to change dropdown
+          }
         })
         .catch(error => {
           console.log('login -->', error);
@@ -253,7 +256,7 @@ export default {
         .then(response => {
           let res = response.data;
           console.log("res" ,res);
-          Vue.prototype.$login = '' //set user type here
+          Vue.prototype.$login = res['role'] //set user type here
         })
         .catch(error => {
           console.log('getting session vars-->', error);
@@ -297,20 +300,20 @@ export default {
               `You Logged Out`,
               'success'
             )
-            window.location.replace('http://localhost:8000/')
+            window.location.replace('http://localhost:5000/')
           })
       }
       if (item == "Forms") {
-        window.location.replace('http://localhost:8000/forms')
+        window.location.replace('http://localhost:5000/forms')
       }
       if (item == "My Bookings") {
-        window.location.replace('http://localhost:8000/bookings')
+        window.location.replace('http://localhost:5000/bookings')
       }
       if (item == "Track Spending") {
-        window.location.replace('http://localhost:8000/spending')
+        window.location.replace('http://localhost:5000/spending')
       }
       if (item == "Statistics") {
-        window.location.replace('http://localhost:8000/statistics')
+        window.location.replace('http://localhost:5000/statistics')
       }
     }
   }
