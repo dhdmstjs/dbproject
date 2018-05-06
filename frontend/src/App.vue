@@ -132,22 +132,6 @@
 
 
     <router-view/>
-    <v-card height="200px" flat>
-      <v-bottom-nav absolute :value="true" :active.sync="e1" color="transparent">
-        <v-btn flat color="teal" value="recent" @click="router('home')">
-            <span>Home</span>
-            <v-icon>home</v-icon>
-        </v-btn>
-        <v-btn flat color="teal" value="favorites" @click="router('favorites')">
-          <span>Favorites</span>
-          <v-icon>favorite</v-icon>
-        </v-btn>
-        <v-btn flat color="teal" value="nearby" @click="router('nearby')">
-          <span>Nearby</span>
-          <v-icon>place</v-icon>
-        </v-btn>
-      </v-bottom-nav>
-    </v-card>
   </v-app>
   </div>
 </template>
@@ -305,7 +289,7 @@ export default {
     dropdownMenu (item) {
       console.log("item",item);
       if (item == "Logout") {
-        const path = `http://localhost:5000/api/####`
+        const path = `http://localhost:5000/logout/auth`
         var d = {
           "user_logout": true,
         }

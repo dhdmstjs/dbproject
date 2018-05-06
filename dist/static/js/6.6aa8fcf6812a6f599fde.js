@@ -1,0 +1,2 @@
+webpackJsonp([6],{SvJk:function(t,a,n){"use strict";var o=n("UlOv");a.a={extends:o.b,props:["chartData","optionsData"],data:function(){return{}},mounted:function(){console.log("chartData",this.chartData),console.log("optionsData",this.optionsData),this.renderChart(this.chartData,this.optionsData)}}},iPQG:function(t,a,n){"use strict";Object.defineProperty(a,"__esModule",{value:!0});var o=n("SvJk"),e=n("VU/8"),s=e(o.a,null,!1,null,null,null);a.default=s.exports}});
+//# sourceMappingURL=6.6aa8fcf6812a6f599fde.js.map
