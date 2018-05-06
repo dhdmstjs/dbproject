@@ -253,7 +253,6 @@ export default {
         .then(response => {
           let res = response.data;
           console.log("res" ,res);
-          Vue.prototype.$login = res
         })
         .catch(error => {
           console.log('getting session vars-->', error);
