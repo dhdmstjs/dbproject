@@ -45,7 +45,7 @@ def dates_to_array(date1, date2):
         year1, year2 = year2, year1
     if (year2 - year1 > 3):
         year2 = year1 + 3
-    while (month1 <= month2  or year1 <= year2):
+    while (month1 <= month2  or year1 < year2):
         labels.append(str(year1) +'-' + "%02d" % (month1))
         data.append(0)
         month1 += 1
