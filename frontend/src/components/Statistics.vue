@@ -418,6 +418,7 @@ export default {
           yAxes: [{id: 'y-axis-1', ticks: {min: 0}}]
         }
       },
+      username: null,
     }
   },
   created () {
@@ -428,7 +429,8 @@ export default {
       .then(response => {
         let res = response.data;
         console.log("res" ,res);
-        Vue.prototype.$login = '' //set user type here
+        Vue.prototype.$login = res.role //set user type here
+        this.username = res.username
         console.log("this.$login", this.$login);
         if (this.$login == 'booking_agent'){
           console.log("hi");
@@ -469,7 +471,7 @@ export default {
       d2 = {
         'date1': this.today,
         'date2': this.month, //30 days ago
-        'username': 'colton@nyu'
+        'username': this.username
       }
       axios.post(path2, d2)
         .then(response => {
@@ -506,7 +508,7 @@ export default {
       var d = {
         "date2": this.today,
         "date1": this.year,
-        "username": 'colton@nyu'
+        "username": this.username
       }
       axios.post(path, d)
         .then(response => {
@@ -539,7 +541,7 @@ export default {
       var d = {
         "date2": this.today,
         "date1": this.sixmonths,
-        'username': 'c'
+        'username': this.username
       }
       console.log("d",d);
       axios.post(path, d)
@@ -576,7 +578,7 @@ export default {
       var d = {
         "date2": this.today,
         "date1": this.onemonth,
-        "username": 'c',
+        "username": this.username,
       }
       axios.post(path, d)
         .then(response => {
@@ -603,7 +605,7 @@ export default {
       var d = {
         "date1": this.date1,
         "date2": this.date2,
-        "username": 'c'
+        "username": this.username
       }
       axios.post(path, d)
         .then(response => {

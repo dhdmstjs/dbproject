@@ -215,6 +215,7 @@ export default {
         today: null,
         onemonth: null,
         year: null,
+        username: null
     }
   },
   created () {
@@ -225,7 +226,8 @@ export default {
       .then(response => {
         let res = response.data;
         console.log("res" ,res);
-        Vue.prototype.$login = '' //set user type here
+        Vue.prototype.$login = res.role //set user type here
+        this.username = res.username
         this.callData() //calls data for bookings
 
       })
@@ -265,7 +267,7 @@ export default {
       if (this.$login == 'booking_agent') {
         const path = `http://localhost:5000/api/bookingagentflights`
         var d = {
-          "username": 'c'
+          "username": this.username
         }
         axios.post(path, d)
           .then(response => {
@@ -281,11 +283,11 @@ export default {
       if (this.$login == 'airline_staff') {
         const path = `http://localhost:5000/api/airlinestaffflights`
         var d = {
-          "username": "dirty_dan@gmail.com",
+          "username": this.username,
           "departure_airport": "",
           "arrival_airport": "",
-          "date1": "",
-          "date2": ""
+          "date1": this.today,
+          "date2": this.onemonth
         }
         console.log("d",d);
         axios.post(path, d)
@@ -304,7 +306,7 @@ export default {
         this.showFlights = true
         const path = `http://localhost:5000/api/airlinestaffflights`
         var d = {
-          "username": "dirty_dan@gmail.com",
+          "username": this.username,
           "departure_airport": this.departure,
           "arrival_airport": this.arrival,
           "date1": this.date1,

@@ -68,7 +68,7 @@
 import axios from 'axios'
 import 'vuetify/dist/vuetify.min.css'
 import BarChart from './Bar'
-
+import Vue from 'vue'
 
 export default {
   components: {
@@ -124,10 +124,22 @@ export default {
           yAxes: [{id: 'y-axis-1', ticks: {min: 0}}]
         }
       },
-      chartFlag2: false
+      chartFlag2: false,
+      username: null,
     }
   },
   created () {
+    const path = `http://localhost:5000/session/vars`;
+    axios.post(path)
+      .then(response => {
+        let res = response.data;
+        console.log("res" ,res);
+        Vue.prototype.$login = res.role //set user type here
+        this.username = res.username
+      })
+      .catch(error => {
+        console.log('getting session vars-->', error);
+      });
     this.getDate()
   },
   methods: {
@@ -145,7 +157,7 @@ export default {
     getData() {
       const path = `http://localhost:5000/api/customerspending` //commission
       var d = {
-        "username" : "colton@nyu",
+        "username" : this.username,
         "date2": this.today,
         "date1": this.sixmonths,
       }
@@ -168,7 +180,7 @@ export default {
         })
 
         var d2 = {
-          "username" : "colton@nyu",
+          "username" : this.username,
           "date2": this.today,
           "date1": this.year,
         }
@@ -189,7 +201,7 @@ export default {
       if (this.$refs.form.validate()) {
         const path = `http://localhost:5000/api/customerspending` //commission
         var d = {
-          "username" : "colton@nyu",
+          "username" : this.username,
           "date1": this.date1,
           "date2": this.date2,
           "year": this.year,

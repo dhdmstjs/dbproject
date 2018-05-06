@@ -175,7 +175,7 @@ export default {
       .then(response => {
         let res = response.data;
         console.log("res" ,res);
-        Vue.prototype.$login = '' //set user type here
+        Vue.prototype.$login = res.role //set user type here
       })
       .catch(error => {
         console.log('getting session vars-->', error);
