@@ -43,7 +43,7 @@ GROUP BY YEAR(purchase_date), MONTH(purchase_date);
 SELECT .10*sum(price) as sump FROM `booking_agent` natural join purchases natural join ticket natural join flight 
 where purchase_date BETWEEN "2017-04-03" and "2019-04-04" and booking_agent.booking_agent_id = %s
 
---Average ticket price
+--Average ticket price commission
 SELECT .10*sum(price)/count(ticket_id) as avg_ticket_price FROM `booking_agent` natural join purchases natural join ticket natural join flight where purchase_date BETWEEN "2017-04-03" and "2019-04-04"
 
 --Total Number of Tickets sold
@@ -53,6 +53,8 @@ SELECT count(ticket_id) as total_sold FROM `booking_agent` natural join purchase
 
 
 --Booking Agent Top 5 customers from commission
+-- We use the MYSQL DATE_SUB function often to get a range of dates given one date. 
+-- For instance, BETWEEN DATE_SUB(%s INTERVAL 1 YEAR) and %s will give the range of one year given the same date for both %s.
 SELECT .10*sum(price) as sump FROM `booking_agent` natural join purchases natural join ticket natural join flight 
 where booking_agent.email = %s and purchase_date BETWEEN DATE_SUB(%s INTERVAL 1 YEAR) and %s 
 group by customer_email 
@@ -132,8 +134,8 @@ SELECT count(ticket.ticket_id) as count_t from flight natural join ticket natura
 where airline_name = "China Eastern"
 and purchase_date BETWEEN "2018-01-05" and "2018-10-05"
 
---Comparison of Revenue earned:
---Revenue from direct sales
+--Comparison of Revenue earned for the last month and the last year:
+--Revenue from direct sales for the last month
 select sum(price) as sump from purchases natural join ticket natural join flight 
 where airline_name = "China Eastern" and purchases.booking_agent_id IS NULL
 
@@ -155,6 +157,8 @@ and flight.departure_time BETWEEN DATE_SUB("2018-05-05", INTERVAL 1 YEAR) and "2
 group by airport_city
 
 --Forms:
+--The sql insertion queries are kept very basic. The bulk of the work for table insertions is kept in the server and frontend 
+-- to make sure that the correct values are inserted in the right places.
 --Create Flight
 insert into flight values(%s,%s, %s, %s, %s, %s, %s, %s, %s)
 

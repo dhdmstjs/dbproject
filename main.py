@@ -26,15 +26,6 @@ conn = pymysql.connect(host='192.168.64.2',
                        charset='utf8mb4',
                        cursorclass=pymysql.cursors.DictCursor)
 
-###
-#with app.app_context():
-#    cursor = conn.cursor()
-#    airline_name = get_airline_staff_airline_name()
-#    date = today_date()
-#    args = (airline_name, date, date)
-#    query = 'SELECT customer.email, count(ticket.ticket_id) from flight natural join ticket natural join purchases natural join customer where airline_name = %s and purchases.customer_email = customer.email and purchase_date BETWEEN DATE_SUB(%s, INTERVAL 1 YEAR) and %s group by customer.email order by count(ticket.ticket_id) DESC limit 10'
-#    cursor.execute(query, args)
-#    data = cursor.fetchall()
 
 @app.route('/api/getflights', methods=['GET', 'POST'])
 def get_flights():
@@ -553,30 +544,54 @@ def get_top_destinations():
 def compare_revenue():
     cursor = conn.cursor()
     airline = get_airline_staff_airline_name()
-    query = 'select sum(price) as sump from purchases natural join ticket natural join flight where airline_name = %s and purchases.booking_agent_id IS NULL'
+    date1 = date2 = today_date()
+    args = (airline, date1, date2)
+    query = 'select sum(price) as sump from purchases natural join ticket natural join flight where airline_name = %s and purchases.booking_agent_id IS NULL and purchases.purchase_date between DATE_SUB(%s, INTERVAL 1 MONTH) and %s '
     try:
-        cursor.execute(query, (airline))
-        conn.commit()
-    except Exception as e:
-        print(e)
-        return json.dumps({"success":"false", "message": "database query failed"})
-    rev = cursor.fetchone()['sump']
-    if rev:
-        revenue_from_direct_sales = int(rev)
-    else:
-        revenue_from_direct_sales = 0
-    query = 'select sum(price)- .10*sum(price) as sump from purchases natural join ticket natural join flight where airline_name = %s and purchases.booking_agent_id IS NOT NULL'
-    try:
-        cursor.execute(query, (airline))
+        cursor.execute(query, args)
         conn.commit()
     except Exception as e:
         print(e)
     rev = cursor.fetchone()['sump']
     if rev:
-        revenue_from_agents = int(cursor.fetchone()['sump'])
+        revenue_from_direct_sales_month = int(rev)
     else:
-        revenue_from_agents = 0
-    return json.dump({"success":"true", "message": "database query succeeded", "direct_sales_revenue":revenue_from_direct_sales, "booking_agents_sales":revenue_from_agents},indent=4,sort_keys=True, default=str)
+        revenue_from_direct_sales_month = 0
+    query = 'select sum(price)- .10*sum(price) as sump from purchases natural join ticket natural join flight where airline_name = %s and purchases.booking_agent_id IS NOT NULL and purchases.purchase_date between DATE_SUB(%s, INTERVAL 1 MONTH) and %s'
+    try:
+        cursor.execute(query, args)
+        conn.commit()
+    except Exception as e:
+        print(e)
+    rev = cursor.fetchone()['sump']
+    if rev:
+        revenue_from_agents_month = int(rev)
+    else:
+        revenue_from_agents_month = 0
+        
+    query = 'select sum(price) as sump from purchases natural join ticket natural join flight where airline_name = %s and purchases.booking_agent_id IS NULL and purchases.purchase_date between DATE_SUB(%s, INTERVAL 1 YEAR) and %s'
+    try:
+        cursor.execute(query, args)
+        conn.commit()
+    except Exception as e:
+        print(e)
+    rev = cursor.fetchone()['sump']
+    if rev:
+        revenue_from_direct_sales_year = int(rev)
+    else:
+        revenue_from_direct_sales_year = 0
+    query = 'select sum(price)- .10*sum(price) as sump from purchases natural join ticket natural join flight where airline_name = %s and purchases.booking_agent_id IS NOT NULL and purchases.purchase_date between DATE_SUB(%s, INTERVAL 1 YEAR) and %s'
+    try:
+        cursor.execute(query, args)
+        conn.commit()
+    except Exception as e:
+        print(e)
+    rev = cursor.fetchone()['sump']
+    if rev:
+        revenue_from_agents_year = int(rev)
+    else:
+        revenue_from_agents_year = 0
+    return json.dump({"success":"true", "message": "database query succeeded", "direct_sales_month":revenue_from_direct_sales_month, "agents_sales_month":revenue_from_agents_month, "direct_sales_year":revenue_from_direct_sales_year, "agent_sales_year":revenue_from_agents_year})
 
 #requires date1 and date2 from frontend
 @app.route('/api/viewreports', methods=['GET', 'POST'])
