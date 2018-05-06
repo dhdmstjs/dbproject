@@ -184,11 +184,10 @@ export default {
     }
   },
   created () {
-    // this.login = true
     this.getSessionVars()
-    if (this.$login != null) {
-      this.login= true
-    }
+    // if (this.$login != null) {
+    //   this.login= true
+    // }
   },
   methods: {
     router (item) {
@@ -200,7 +199,6 @@ export default {
     loginfunction() {
       console.log('testing login', this.username, "+ ", this.password)
       const path = `http://localhost:5000/login/auth`;
-      Vue.prototype.$login = 'airline_staff' //for testing
       console.log("$login", this.$login);
       this.changeDropdown() //testing
       // this.login = true

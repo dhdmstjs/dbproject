@@ -422,7 +422,7 @@ export default {
     // this.loginType()
     // this.$login = 'booking_agent'
 
-    this.$login = 'airline_staff'
+    // this.$login = 'airline_staff'
     this.getDate()
     console.log("this.$login", this.$login);
     if (this.$login == 'booking_agent'){

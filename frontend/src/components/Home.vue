@@ -167,7 +167,7 @@ export default {
     }
   },
   created () {
-    this.$login = 'customer'
+    // this.$login = 'customer'
   },
   methods: {
     submit() {

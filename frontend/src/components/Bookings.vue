@@ -118,20 +118,19 @@ airport<template>
                     class="elevation-1">
                       <template slot="items" slot-scope="props">
                         <tr @click="props.expanded = !props.expanded">
+                          <td class="text-xs-right">{{ props.item.airline_name }}</td>
                           <td class="text-xs-right">{{ props.item.flight_num }}</td>
                           <td class="text-xs-right">{{ props.item.departure_airport }}</td>
                           <td class="text-xs-right">{{ props.item.departure_time }}</td>
-
                           <td class="text-xs-right">{{ props.item.arrival_airport }}</td>
                           <td class="text-xs-right">{{ props.item.arrival_time }}</td>
-
                           <td class="text-xs-right">{{ props.item.status }}</td>
                         </tr>
                       </template>
                       <template slot="expand" slot-scope="props">
                         <v-card flat>
-                          <v-card-text>Customers: list all customer emails here for that flight</v-card-text>
-                          <!-- {{props.item.customers}} -->
+                          <v-card-text>Customers for flight</v-card-text>
+                          {{props.item.customers}}
                         </v-card>
                       </template>
                   </v-data-table>
@@ -192,7 +191,7 @@ export default {
         { text: 'Status', value: 'status' },
       ],
       headers_airline: [
-        { text: 'Airline', value: 'airline_name' },
+          { text: 'Airline', value: 'airline_name' },
           { text: 'Flight Number', value: 'flight_num' },
           { text: 'Departure Airport', value: 'departure_airport' },
           { text: 'Departure Time', value: 'departure_time' },
@@ -203,6 +202,8 @@ export default {
           { text: 'Status', value: 'status' },
         ],
       headers_results: [
+        { text: 'Airline', value: 'airline_name' },
+
           { text: 'Flight Number', value: 'flight_num' },
           { text: 'Departure Airport', value: 'departure_airport' },
           { text: 'Departure Time', value: 'departure_time' },
@@ -212,6 +213,7 @@ export default {
         ],
         today: null,
         onemonth: null,
+        year: null,
     }
   },
   created () {
@@ -222,6 +224,7 @@ export default {
     console.log("this", this.$login);
     //call from db type of login
     //this.$login = ''
+    this.getDate()
     this.callData() //calls data for bookings
   },
   methods: {
@@ -233,6 +236,8 @@ export default {
       this.today = new Date()
       this.today = this.today.toISOString().substring(0, 10); //yyyy-mm-dd
       this.onemonth = this.addMonths(new Date(),-1).toISOString().substring(0, 10)
+      this.year = this.addMonths(new Date(),-12).toISOString().substring(0, 10)
+
     },
     callData(){
       if (this.$login == 'customer') {
@@ -270,13 +275,16 @@ export default {
         const path = `http://localhost:5000/api/airlinestaffflights`
         var d = {
           "username": "dirty_dan@gmail.com",
-          "date1": this.onemonth,
-          "date2": this.today
+          "departure_airport": "",
+          "arrival_airport": "",
+          "date1": "",
+          "date2": ""
         }
+        console.log("d",d);
         axios.post(path, d)
           .then(response => {
             var res = response.data //give me login_usertype,
-            console.log("res, airline", res.flights);
+            console.log("res, airline", res);
             this.items_airline = res.flights
           })
           .catch(error => {
@@ -292,14 +300,14 @@ export default {
           "username": "dirty_dan@gmail.com",
           "departure_airport": this.departure,
           "arrival_airport": this.arrival,
-          "departure_time": this.date1,
-          "arrival_time": this.date2
+          "date1": this.date1,
+          "date2": this.date2
         }
         axios.post(path, d)
           .then(response => {
             var res = response.data //return flights
             console.log("search flight", res);
-            //this.items = res
+            this.items_results = res.flights
           })
           .catch(error => {
             console.log("error getting flights");
