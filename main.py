@@ -591,7 +591,7 @@ def compare_revenue():
         revenue_from_agents_year = int(rev)
     else:
         revenue_from_agents_year = 0
-    return json.dump({"success":"true", "message": "database query succeeded", "direct_sales_month":revenue_from_direct_sales_month, "agents_sales_month":revenue_from_agents_month, "direct_sales_year":revenue_from_direct_sales_year, "agent_sales_year":revenue_from_agents_year})
+    return json.dumps({"success":"true", "message": "database query succeeded", "direct_sales_month":revenue_from_direct_sales_month, "agents_sales_month":revenue_from_agents_month, "direct_sales_year":revenue_from_direct_sales_year, "agent_sales_year":revenue_from_agents_year})
 
 #requires date1 and date2 from frontend
 @app.route('/api/viewreports', methods=['GET', 'POST'])
