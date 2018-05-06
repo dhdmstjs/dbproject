@@ -50,7 +50,7 @@
             </v-layout>
         </div>
 
-        <h2> View Top Customers # tickets</h2>
+        <h2> View Top Customers # tickets past 6 months</h2>
         <v-layout row wrap justify-center>
           <v-flex xs5 >
             <v-data-table :headers="headers_customers_tickets" :items="items_customers_tickets" hide-actions class="elevation-1">
@@ -61,8 +61,21 @@
             </v-data-table>
           </v-flex>
         </v-layout>
+
+        <v-layout row wrap justify-center>
+              <v-flex xs7 >
+            <template>
+            <bar-chart v-if="this.ticketDataFlag==true" :chartData="this.ticketData"
+            :optionsData="this.ticketOptions"
+            :width="400"
+            :height="200"></bar-chart>
+          </template>
+        </v-flex>
+        </v-layout>
+
+
         <br>
-        <h2> View Top Customers Amount of Commission </h2>
+        <h2> View Top Customers Amount of Commission past year </h2>
         <v-layout row wrap justify-center>
           <v-flex xs5 >
             <v-data-table :headers="headers_customers_comm" :items="items_customers_comm" hide-actions class="elevation-1">
@@ -72,6 +85,17 @@
               </template>
             </v-data-table>
           </v-flex>
+        </v-layout>
+
+        <v-layout row wrap justify-center>
+              <v-flex xs7 >
+            <template>
+            <bar-chart v-if="this.commDataFlag==true" :chartData="this.commData"
+            :optionsData="this.commOptions"
+            :width="400"
+            :height="200"></bar-chart>
+          </template>
+        </v-flex>
         </v-layout>
 
       </div>
@@ -152,6 +176,19 @@
               </v-layout>
           </v-form>
 
+        <div v-if="this.submitBar==true">
+          <v-layout row wrap justify-center>
+                <v-flex xs7 >
+              <template>
+              <bar-chart v-if="this.showData==true" :chartData="this.dataset"
+              :optionsData="this.dataoptions"
+              :width="400"
+              :height="200"></bar-chart>
+            </template>
+          </v-flex>
+        </v-layout>
+        </div>
+
         <br><br><div>
           <v-layout row wrap justify-center>
             <v-flex xs7 >
@@ -171,6 +208,30 @@
           </v-layout>
         </div>
 
+        <!-- pie chart -->
+        <v-layout row wrap justify-center>
+          <v-flex xs7 >
+            <template>
+            <pie-chart v-if="this.pieData==true" :chartData="this.dataPie"
+            :optionsData="this.pieOptions"
+            :width="400"
+            :height="200"></pie-chart>
+          </template>
+        </v-flex>
+        </v-layout>
+        <br><br><br>
+        <v-layout row wrap justify-center>
+          <v-flex xs7 >
+            <template>
+            <pie-chart v-if="this.pieDataTwo==true" :chartData="this.dataPieTwo"
+            :optionsData="this.pieOptionsTwo"
+            :width="400"
+            :height="200"></pie-chart>
+          </template>
+        </v-flex>
+        </v-layout>
+
+
     </div>
 
 
@@ -181,11 +242,16 @@
 <script>
 import axios from 'axios'
 import 'vuetify/dist/vuetify.min.css'
-import {Bar, Pie} from 'vue-chartjs'
-
+import BarChart from './Bar'
+import PieChart from './Pie'
 
 export default {
-  extends: Bar, Pie,
+  components: {
+     'bar-chart': BarChart,
+     'pie-chart': PieChart,
+
+  },
+  // extends: Bar
   data () {
     return {
       dateRange:false,
@@ -254,7 +320,102 @@ export default {
       threemonths: null,
       year: null,
       soldTotal: null, //value for view reports between dates
+      labels: [],
+      dataset: {
+        labels: [],
+        datasets: [{
+          label: '',
+          data: null,
+          backgroundColor: '#f87979'
+        }]
+      },
+      dataoptions: {
+        title: {
+          display: true,
+          text: '',
+        },
+        scales: {
+          yAxes: [{id: 'y-axis-1', ticks: {min: 0}}]
+        }
+      },
+      dataPie: {
+        labels: [],
+        datasets: [{
+          label: '',
+          data: null,
+          backgroundColor: [
 
+            '#00D8FF',
+            '#DD1B16'
+          ],
+        }]
+      },
+      pieOptions: {
+        title: {
+          display: true,
+          text: '',
+        }
+      },
+      dataPieTwo: {
+        labels: [],
+        datasets: [{
+          backgroundColor: [
+            '#41B883',
+            '#E46651',
+
+          ],
+          label: '',
+          data: null,
+        }]
+      },
+      pieOptionsTwo: {
+        title: {
+          display: true,
+          text: '',
+        }
+      },
+      pieDataTwo: false,
+      pieData: false, //for piechart
+      submitBar: false, //toggle barchart
+      showData: false, //toggle dat sent to barchart
+      ticketDataFlag: false, //for bar for BA
+      commDataFlag: false, //for bar for BA
+      ticketData: { //# tickets
+        labels: [],
+        datasets: [{
+          label: '',
+          data: null,
+          backgroundColor: '#f87979'
+
+        }]
+      },
+      ticketOptions: {
+        title: {
+          display: true,
+          text: '',
+        },
+        scales: {
+          yAxes: [{id: 'y-axis-1', ticks: {min: 0}}]
+        }
+      },
+      commData: { ///amount of commission
+        labels: [],
+        datasets: [{
+          label: '',
+          data: null,
+          backgroundColor: '#f87979'
+
+        }]
+      },
+      commOptions: {
+        title: {
+          display: true,
+          text: '',
+        },
+        scales: {
+          yAxes: [{id: 'y-axis-1', ticks: {min: 0}}]
+        }
+      },
     }
   },
   created () {
@@ -273,7 +434,11 @@ export default {
       this.getTopBooking()
       this.getTopCustomerAirline()
       this.getData()
+      this.getPie()
     }
+
+
+
   },
   methods: {
     getData() {
@@ -376,10 +541,25 @@ export default {
           console.log("top cust",res);
           this.items_customers_tickets = res.ticket_data
           this.items_customers_comm = res.commission_data
+          this.ticketDataFlag = true
+          this.commDataFlag = true
+          this.ticketData.labels = res.ticket_customers.labels
+          this.ticketData.datasets.data = res.ticket_customers.values
+          this.ticketData.datasets[0].label ="hello"
+          this.ticketData.datasets[0].data = res.ticket_customers.values
+          this.ticketOptions.title.text = 'Top Customers # of tickets'
+
+          this.commData.labels = res.commission_customers.labels
+          this.commData.datasets.data = res.commission_customers.values
+          this.commData.datasets[0].label ="hello"
+          this.commData.datasets[0].data = res.commission_customers.values
+          this.commOptions.title.text = 'Top Customers Commission'
         })
         .catch(error => {
           console.log("error => ", error);
         })
+
+
 
     },
     getCommission() {
@@ -443,12 +623,66 @@ export default {
             var res = response.data
             this.soldTotal = res.total
             console.log("res view reports", res);
+            this.submitBar = true
+
+            this.renderBar(res)
+
 
           })
           .catch(error => {
             console.log("error => ", error);
           })
+
     },
+    renderBar(items) {
+      console.log("items",items);
+      this.showData = true
+
+      this.dataset.labels = items.labels
+      this.dataset.datasets.data = items.values
+      this.dataset.datasets[0].label = "tickets"
+      this.dataset.datasets[0].data = items.values
+      this.dataoptions.title.text = 'total # tickets sold /month'
+      console.log("render labels", this.dataset.labels)
+      console.log("this. data testing", this.dataset.datasets.data);
+    },
+
+    getPie() {
+      const path = `http://localhost:5000/api/comparerevenue`
+        axios.get(path)
+          .then(response => {
+            var res = response.data
+            console.log("res view compare", res);
+            this.pieData = true
+            let direct_labels = []
+            let indirect_labels = []
+            direct_labels.push('direct_sales_month')
+            direct_labels.push('direct_sales_year')
+            indirect_labels.push('indirect_sales_month')
+            indirect_labels.push('indirect_sales_year')
+            let direct_values = [res.direct_sales_month, res.direct_sales_year]
+            let indirect_values = [res.agents_sales_month, res.agent_sales_year]
+
+            this.dataPie.labels = direct_labels
+            this.dataPie.datasets.data = direct_values
+            this.dataPie.datasets[0].data = direct_values
+            this.dataPie.datasets[0].label = "direct sales"
+            this.pieOptions.title.text = 'Direct Sales'
+
+            this.pieDataTwo = true
+            this.dataPieTwo.labels = indirect_labels
+            this.dataPieTwo.datasets.data = indirect_values
+            this.dataPieTwo.datasets[0].data = indirect_values
+            this.dataPieTwo.datasets[0].label = "indirect sales"
+            this.pieOptionsTwo.title.text = 'InDirect Sales'
+
+
+
+          })
+          .catch(error => {
+            console.log("error => ", error);
+          })
+    }
     // loginType() {
     //   const path = `http://localhost:5000/api/####`
     //   var d = {
