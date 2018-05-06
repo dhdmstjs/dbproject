@@ -118,6 +118,7 @@
         <v-layout row wrap justify-end>
           <v-flex xs4>
           <!-- menu dropdown -->
+          <div v-if ="this.$login != null">
             <v-menu offset-y>
               <v-btn color="primary" dark slot="activator">User Name</v-btn>
               <v-list>
@@ -126,6 +127,7 @@
                 </v-list-tile>
               </v-list>
             </v-menu>
+          </div>
           </v-flex>
         </v-layout>
       </div>
