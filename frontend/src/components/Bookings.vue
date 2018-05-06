@@ -217,7 +217,7 @@ export default {
     }
   },
   created () {
-    this.$login = 'airline_staff'
+    // this.$login = 'airline_staff'
     // this.$login = 'booking_agent'
     // this.$login = 'customer'
 
